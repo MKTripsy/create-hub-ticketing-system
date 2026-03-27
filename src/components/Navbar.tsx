@@ -1,6 +1,19 @@
+'use client'
+
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Navbar() {
+const router = useRouter()
+  const pathname = usePathname()
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/')
+  }
+
+  const isAdminRoute = pathname.startsWith('/admin')
+
   return (
     <nav className="bg-cforange border-b border-gray-200 px-8 py-4" style={{ backgroundColor: '#FF6347' }}>
       <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -27,14 +40,29 @@ export default function Navbar() {
           >
             Scan
           </Link>
-          <Link
+          {isAdminRoute ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 text-sm font-medium"
+              style={{ backgroundColor: '#EEEEC6' }}
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+              style={{ backgroundColor: '#EEEEC6' }}
+            >
+              Home
+            </Link>)}
+          {/* <Link
             href="/"
             className="text-black px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium" style={{ backgroundColor: '#EEEEC6' }}
           >
             Home
-          </Link>
+          </Link> */}
         </div>
-
       </div>
     </nav>
   )

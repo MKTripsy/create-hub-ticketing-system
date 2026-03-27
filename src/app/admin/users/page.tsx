@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import QRCode from 'react-qr-code'
+import { toPng } from 'html-to-image'
 // import { useReactToPrint } from 'react-to-print'
 
 // type User = {
@@ -40,6 +41,7 @@ export default function UserListPage() {
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
+  const qrRef = useRef<HTMLDivElement>(null)
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -113,6 +115,22 @@ const handlePrint = () => {
   printWindow.document.close()
   printWindow.print()
 }
+
+const handleDownloadPng = async () => {
+  if (!qrRef.current) return
+
+  try {
+    const dataUrl = await toPng(qrRef.current, { quality: 1.0 })
+    const link = document.createElement('a')
+    link.download = `${selectedUser?.custom_id}-qr.png`
+    link.href = dataUrl
+    link.click()
+  } catch (error) {
+    console.error('Error downloading QR:', error)
+    alert('Something went wrong. Please try again.')
+  }
+}
+
 
   if (loading) {
     return (
@@ -216,8 +234,22 @@ const handlePrint = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full mx-4">
 
-              {/* Printable area */}
-              <div ref={printRef} className="text-center p-4">
+              {/* Printable/downloadable area */}
+                  <div ref={qrRef} className="text-center p-4 bg-white">
+                    <h2 className="text-xl font-bold text-black mb-1">
+                      {selectedUser.first_name} {selectedUser.last_name}
+                    </h2>
+                    <p className="text-black text-sm mb-4">
+                      {selectedUser.custom_id}
+                    </p>
+                    <div className="flex justify-center mb-4">
+                      <QRCode value={selectedUser.qr_code} size={200} />
+                    </div>
+                    <p className="text-black text-xs">
+                      {selectedUser.spaces?.space_name} — Grade {selectedUser.grade_level}
+                    </p>
+                  </div>
+              {/* <div ref={printRef} className="text-center p-4">
                 <h2 className="text-xl font-bold text-gray-800 mb-1">
                   {selectedUser.first_name} {selectedUser.last_name}
                 </h2>
@@ -230,10 +262,30 @@ const handlePrint = () => {
                 <p className="text-gray-400 text-xs">
                   {selectedUser.spaces?.space_name} — Grade {selectedUser.grade_level}
                 </p>
-              </div>
+              </div> */}
 
               {/* Buttons */}
               <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleDownloadPng}
+                className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium"
+              >
+                Download PNG
+              </button>
+              <button
+                onClick={handlePrint}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
+              >
+              Print
+              </button>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
+              {/* <div className="flex gap-3 mt-4">
                 <button
                   onClick={handlePrint}
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
@@ -246,7 +298,7 @@ const handlePrint = () => {
                 >
                   Close
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
