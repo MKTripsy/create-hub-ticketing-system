@@ -2,12 +2,12 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center p-8">
-      <div className="max-w-md w-full text-center">
+    <main className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: '#FAF2F0' }}>
+      <div className="max-w-250px  text-center">
 
         {/* Organization Name */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-5xl font-bold text-gray-800 mb-2">
             Create Foundation Ticketing System
           </h1>
             
@@ -16,17 +16,19 @@ export default function Home() {
         {/* Buttons */}
         <div className="space-y-4">
           <Link
-            href="/admin/users"
-            className="flex items-center justify-center gap-3 w-full bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 font-medium text-lg transition-colors"
+            href="/admin/login"
+            className="flex items-center justify-center gap-3 w-full text-white py-4 rounded-xl hover:bg-blue-700 font-medium text-lg transition-colors"
+            style={{ backgroundColor: '#414141' }}
           >
-            👤 Admin Panel
+            Admin Panel
           </Link>
 
           <Link
             href="/scan"
-            className="flex items-center justify-center gap-3 w-full bg-white text-blue-600 py-4 rounded-xl hover:bg-blue-50 font-medium text-lg transition-colors border-2 border-blue-600"
+            className="flex items-center justify-center gap-3 w-full text-white py-4 rounded-xl hover:bg-blue-50 font-medium text-lg transition-colors border-2 border-gray-600"
+            style={{ backgroundColor: '#414141' }}
           >
-            📷 Scan QR Code
+            Scan QR Code
           </Link>
         </div>
 

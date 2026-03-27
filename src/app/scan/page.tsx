@@ -136,8 +136,8 @@ export default function ScanPage() {
   // Result screen
   if (result) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-        <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="rounded-xl shadow p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">👋</div>
           <h2 className="text-3xl font-bold text-green-600 mb-2">
             Welcome, {result.first_name}!
@@ -145,7 +145,7 @@ export default function ScanPage() {
           <p className="text-gray-500 mb-6">
             Successfully verified in the system
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left space-y-2">
+          <div className="rounded-lg p-4 mb-6 text-left space-y-2">
             <div className="flex justify-between">
               <span className="text-black text-sm">Full Name</span>
               <span className="font-medium text-black">
@@ -171,7 +171,7 @@ export default function ScanPage() {
             onClick={handleReset}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
           >
-            📷 Scan Another
+            Scan Another
           </button>
         </div>
       </div>
@@ -203,8 +203,8 @@ export default function ScanPage() {
 
   // Main scan page
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="rounded-xl shadow p-8 max-w-md w-full" style={{ backgroundColor: '#CEE4B8' }}>
 
         <h1 className="text-2xl font-bold text-black mb-2 text-center">
           Verify User
@@ -222,21 +222,21 @@ export default function ScanPage() {
             onClick={() => { setActiveTab('qr'); stopScanner() }}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'qr'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-black text-black'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
-            📷 Scan QR Code
+            Scan QR Code
           </button>
           <button
             onClick={() => { setActiveTab('manual'); stopScanner() }}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'manual'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-black text-black'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
-            ⌨️ Enter ID
+            Enter ID
           </button>
         </div>
 
@@ -246,9 +246,9 @@ export default function ScanPage() {
             {!scanning ? (
               <button
                 onClick={startScanner}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium text-lg"
+                className="w-full text-black py-3 rounded-lg hover:bg-blue-700 font-medium text-lg" style={{ backgroundColor: '#EEEEC6' }}
               >
-                📷 Start Scanning
+                 Start Scanning
               </button>
             ) : (
               <div>
@@ -281,13 +281,13 @@ export default function ScanPage() {
             <button
               onClick={lookupByCustomId}
               disabled={manualLoading || !manualId.trim()}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-black py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#EEEEC6' }}
             >
               {manualLoading ? 'Searching...' : 'Search User'}
             </button>
           </div>
         )}
-
       </div>
     </div>
   )
