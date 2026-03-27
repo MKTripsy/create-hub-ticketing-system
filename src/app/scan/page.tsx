@@ -212,6 +212,9 @@ export default function ScanPage() {
         <p className="text-black text-center mb-6">
           Scan QR code or enter ID manually
         </p>
+        <p className="text-black text-center mb-6">
+          Please click on Request Camera Permissions if the camera does not turn on automatically
+        </p>
 
         {/* Tabs */}
         <div className="flex border-b mb-6">

@@ -181,13 +181,28 @@ const handlePrint = () => {
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <button
                         onClick={() => setSelectedUser(user)}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
                         View QR
                       </button>
+                    </td> */}
+                    <td className="px-6 py-4">
+                        <div className="flex gap-3">
+                            <button
+                            onClick={() => setSelectedUser(user)}
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                            View QR
+                            </button>
+                        < a href={`/admin/users/${user.id}/edit`}
+                        className="text-green-600 hover:text-green-800 text-sm font-medium"
+                        >
+                        Edit
+                        </a>
+                    </div>
                     </td>
                   </tr>
                 ))}
