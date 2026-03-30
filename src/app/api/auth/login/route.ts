@@ -7,12 +7,18 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
+    console.log('Login attempt for username:', username)
+
     // Find admin by username
     const { data: admin, error } = await supabase
       .from('admin')
       .select('*')
       .eq('username', username)
       .single()
+
+      console.log('Admin found:', admin ? 'yes' : 'no') 
+      console.log('DB error:', error) 
+
 
     if (error || !admin) {
       return NextResponse.json(
@@ -23,6 +29,8 @@ export async function POST(request: NextRequest) {
 
     // Check password
     const passwordMatch = await bcrypt.compare(password, admin.password_hash)
+
+    console.log('Password match:', passwordMatch)
 
     if (!passwordMatch) {
       return NextResponse.json(
@@ -46,9 +54,12 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 8 // 8 hours
     })
 
+    console.log('Cookie set successfully')
+
     return NextResponse.json({ message: 'Login successful' })
 
   } catch (err) {
+    console.error('Login error:', err)
     return NextResponse.json(
       { message: 'Something went wrong' },
       { status: 500 }
