@@ -2,17 +2,18 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Navbar() {
 const router = useRouter()
-  const pathname = usePathname()
+const pathname = usePathname()
+const { admin, logout } = useAuth()
+const isAdminRoute = pathname.startsWith('/admin')
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
-  }
-
-  const isAdminRoute = pathname.startsWith('/admin')
+  // const handleLogout = async () => {
+  //   await fetch('/api/auth/logout', { method: 'POST' })
+  //   router.push('/')
+  // }
 
   return (
     <nav className="bg-cforange border-b border-gray-200 px-8 py-4" style={{ backgroundColor: '#FF6347' }}>
@@ -40,14 +41,24 @@ const router = useRouter()
           >
             Scan
           </Link>
-          {isAdminRoute ? (
+          {isAdminRoute && admin ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">
+                 {admin.first_name}
+              </span>
+              <button
+                onClick={logout}
+                className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 text-sm font-medium"
+              >
+          {/* {isAdminRoute ? (
             <button
               onClick={handleLogout}
               className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 text-sm font-medium"
               style={{ backgroundColor: '#EEEEC6' }}
-            >
+            > */}
               Logout
             </button>
+            </div>
           ) : (
             <Link
               href="/"

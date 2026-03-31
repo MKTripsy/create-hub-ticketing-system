@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { v4 as uuidv4 } from 'uuid'
 import QRCode from 'react-qr-code'
+import AdminGuard from '@/components/AdminGuard'
 
 type Space = {
   id: number
@@ -315,6 +316,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   // Success screen
   if (success) {
     return (
+      <AdminGuard>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
         <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
           <h2 className="text-2xl font-bold text-green-600 mb-2">
@@ -349,10 +351,12 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </div>
       </div>
+      </AdminGuard>
     )
   }
 
   return (
+    <AdminGuard>
     <div className="min-h-screen bg-gray-50 p-8" style={{ backgroundColor: '#FAF2F0' }}>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-xl shadow p-8">
@@ -536,6 +540,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
       </div>
     </div>
+    </AdminGuard>
   )
 }
 

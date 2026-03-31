@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import QRCode from 'react-qr-code'
+import AdminGuard from '@/components/AdminGuard'
 
 type Space = {
   id: number
@@ -286,13 +287,16 @@ const handleDelete = async () => {
 
   if (loading) {
     return (
+      <AdminGuard>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-500">Loading user...</p>
       </div>
+      </AdminGuard>
     )
   }
 
   return (
+    <AdminGuard>
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-xl shadow p-8">
@@ -536,5 +540,6 @@ const handleDelete = async () => {
         </div>
       </div>
     </div>
+    </AdminGuard>
   )
 }

@@ -2,9 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import AdminGuard from '@/components/AdminGuard'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [form, setForm] = useState({
     username: '',
     password: ''
@@ -18,27 +21,37 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError('')
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      })
+    const success = await login(form.username, form.password)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.message || 'Invalid username or password')
-        return
-      }
-
+    if (success) {
       router.push('/admin/users')
-
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
+    } else {
+      setError('Invalid username or password')
     }
+
+    setLoading(false)
+
+    // try {
+    //   const response = await fetch('/api/auth/login', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(form)
+    //   })
+
+    //   const data = await response.json()
+
+    //   if (!response.ok) {
+    //     setError(data.message || 'Invalid username or password')
+    //     return
+    //   }
+
+    //   router.push('/admin/users')
+
+    // } catch (err) {
+    //   setError('Something went wrong. Please try again.')
+    // } finally {
+    //   setLoading(false)
+    // }
   }
 
   return (

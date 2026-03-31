@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import QRCode from 'react-qr-code'
 import { toPng } from 'html-to-image'
+import AdminGuard from '@/components/AdminGuard'
 // import { useReactToPrint } from 'react-to-print'
 
 // type User = {
@@ -37,6 +38,7 @@ type User = {
 }
 
 export default function UserListPage() {
+
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -141,6 +143,7 @@ const handleDownloadPng = async () => {
   }
 
   return (
+    <AdminGuard>
     <div className="min-h-screen p-8" style={{ backgroundColor: '#FAF2F0' }}>
       <div className="max-w-6xl mx-auto">
 
@@ -305,5 +308,6 @@ const handleDownloadPng = async () => {
 
       </div>
     </div>
+    </AdminGuard>
   )
 }
