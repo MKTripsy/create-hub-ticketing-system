@@ -19,6 +19,11 @@
   }
 }
 
+/* body {
+  background-color: #faf2f0;
+  font-family: var(--font-poppins), sans-serif;
+} */
+
 body {
   background-color: #faf2f0;
   background: var(--background);

@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase'
 import { v4 as uuidv4 } from 'uuid'
 import QRCode from 'react-qr-code'
 import AdminGuard from '@/components/AdminGuard'
+import { toPng } from 'html-to-image'
+import { useRef } from 'react'
 
 type Space = {
   id: number
@@ -43,6 +45,7 @@ export default function AddUserPage() {
   const [qrValue, setQrValue] = useState('')
   const [savedUser, setSavedUser] = useState({ first_name: '', last_name: '' })
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
+  const qrRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
     first_name: '',
@@ -229,75 +232,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     setLoading(false)
   }
 }
-  // const handleSubmit = async (e: React.FormEvent) => {      27/03/2026 10:00
-  //   e.preventDefault()
-  //   setLoading(true)
-
-  //   try {
-  //     const customId = await generateCustomId()
-  //     const qrCode = uuidv4()
-
-  //     // Insert user
-  //     const { data: newUser, error: userError } = await supabase
-  //       .from('users')
-  //       .insert({
-  //         custom_id: customId,
-  //         first_name: form.first_name,
-  //         last_name: form.last_name,
-  //         birthdate: form.birthdate,
-  //         grade_level: form.grade_level,
-  //         space_id: parseInt(form.space_id),
-  //         qr_code: qrCode,
-  //         is_active: true,
-  //       })
-  //       .select()
-  //       .single()
-
-  //     if (userError) {
-  //     console.error('User insert error:', userError)
-  //     throw userError
-  //   }
-
-  //    console.log('User created:', newUser) //for error checking
-
-  //     // Insert availability if any selected
-  //      console.log('Availability to save:', availability)
-  //       console.log('Space ID:', form.space_id)
-
-  //     if (availability.length > 0) {
-  //       const availabilityRows = availability.map(a => ({
-  //         user_id: newUser.id,
-  //         day: a.day,
-  //         time_slot_id: a.time_slot_id,
-  //         space_id: parseInt(form.space_id),
-  //       }))
-
-  //         console.log('Availability rows:', availabilityRows)
-
-  //       const { error: availError } = await supabase
-  //         .from('availability')
-  //         .insert(availabilityRows)
-
-  //       if (availError) {
-  //   console.error('Availability insert error:', availError) 
-  //   throw availError
-  // } console.log('Availability saved successfully!')
-
-
-  //     }
-
-  //     setGeneratedId(customId)
-  //     setQrValue(qrCode)
-  //     setSavedUser({ first_name: form.first_name, last_name: form.last_name })
-  //     setSuccess(true)
-
-  //   } catch (error) {
-  //     console.error('Error adding user:', error)
-  //     alert('Something went wrong. Please try again.')
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
 
   const handleReset = () => {
     setSuccess(false)
@@ -313,11 +247,25 @@ const handleSubmit = async (e: React.FormEvent) => {
     })
   }
 
+  const handleDownloadPng = async () => {
+  if (!qrRef.current) return
+  try {
+    const dataUrl = await toPng(qrRef.current, { quality: 1.0 })
+    const link = document.createElement('a')
+    link.download = `${generatedId}-qr.png`
+    link.href = dataUrl
+    link.click()
+  } catch (error) {
+    console.error('Error downloading QR:', error)
+    alert('Something went wrong. Please try again.')
+  }
+  }
+
   // Success screen
   if (success) {
     return (
       <AdminGuard>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-[#FAF2F0] flex items-center justify-center p-8">
         <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
           <h2 className="text-2xl font-bold text-green-600 mb-2">
             ✅ User Added Successfully!
@@ -329,12 +277,25 @@ const handleSubmit = async (e: React.FormEvent) => {
             <p className="text-sm text-black mb-1">User ID</p>
             <p className="text-2xl font-bold text-black">{generatedId}</p>
           </div>
-          <div className="flex justify-center mb-6">
+          {/* <div className="flex justify-center mb-6">
             <QRCode value={qrValue} size={200} />
           </div>
           <p className="text-sm text-black mb-6">
             Download or print this QR code for the child.
-          </p>
+          </p> */}
+          <div ref={qrRef} className="flex flex-col items-center bg-white p-4 mb-2">
+            <p className="font-bold text-black mb-1">
+              {savedUser.first_name} {savedUser.last_name}
+            </p>
+            <p className="text-sm text-gray-500 mb-3">{generatedId}</p>
+            <QRCode value={qrValue} size={200} />
+          </div>
+          <button
+            onClick={handleDownloadPng}
+            className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium mb-6"
+          >
+            Download QR as PNG
+          </button>
           <div className="flex gap-3">
             <button
               onClick={handleReset}

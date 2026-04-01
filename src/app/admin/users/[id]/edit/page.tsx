@@ -211,30 +211,86 @@ export default function EditUserPage() {
     setForm(prev => ({ ...prev, is_active: !prev.is_active }))
   }
 
+// const handleDelete = async () => {
+//   if (!confirm('Are you sure you want to delete this user?')) return
+//   setLoading(true)
+
+//   try {
+//     const { error: availError } = await supabase
+//       .from('availability')
+//       .delete()
+//       .eq('user_id', parseInt(id as string))
+
+//     if (availError) {
+//       console.error('Availability delete error:', availError)
+//       throw availError
+//     }
+
+//     const { error: userError } = await supabase
+//       .from('users')
+//       .delete()
+//       .eq('id', parseInt(id as string))
+
+//     if (userError) {
+//       console.error('User delete error:', userError)
+//       throw userError
+//     }
+
+//     router.push('/admin/users')
+
+//   } catch (error) {
+//     console.error('Error deleting user:', error)
+//     alert('Something went wrong. Please try again.')
+//   } finally {
+//     setLoading(false)
+//   }
+// }
+
 const handleDelete = async () => {
-  if (!confirm('Are you sure you want to delete this user?')) return
+  if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return
   setLoading(true)
 
   try {
+    // Step 1 — Get all attendance sessions for this user
+    const { data: sessions } = await supabase
+      .from('attendance_session')
+      .select('id')
+      .eq('user_id', parseInt(id as string))
+
+    // Step 2 — Delete survey responses for each session
+    if (sessions && sessions.length > 0) {
+      const sessionIds = sessions.map(s => s.id)
+      const { error: surveyError } = await supabase
+        .from('survey_responses')
+        .delete()
+        .in('session_id', sessionIds)
+
+      if (surveyError) throw surveyError
+    }
+
+    // Step 3 — Delete attendance sessions
+    const { error: sessionError } = await supabase
+      .from('attendance_session')
+      .delete()
+      .eq('user_id', parseInt(id as string))
+
+    if (sessionError) throw sessionError
+
+    // Step 4 — Delete availability
     const { error: availError } = await supabase
       .from('availability')
       .delete()
       .eq('user_id', parseInt(id as string))
 
-    if (availError) {
-      console.error('Availability delete error:', availError)
-      throw availError
-    }
+    if (availError) throw availError
 
+    // Step 5 — Delete user
     const { error: userError } = await supabase
       .from('users')
       .delete()
       .eq('id', parseInt(id as string))
 
-    if (userError) {
-      console.error('User delete error:', userError)
-      throw userError
-    }
+    if (userError) throw userError
 
     router.push('/admin/users')
 
@@ -288,7 +344,8 @@ const handleDelete = async () => {
   if (loading) {
     return (
       <AdminGuard>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center"
+        style={{ backgroundColor: '#FAF2F0' }}>
         <p className="text-gray-500">Loading user...</p>
       </div>
       </AdminGuard>
@@ -297,13 +354,14 @@ const handleDelete = async () => {
 
   return (
     <AdminGuard>
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8"
+          style={{ backgroundColor: '#FAF2F0' }}>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-xl shadow p-8">
 
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-black">
               {form.first_name} {form.last_name}
             </h1>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -446,7 +504,7 @@ const handleDelete = async () => {
                             checked={isSelected(day, slot.id)}
                             onChange={() => isEditing && toggleAvailability(day, slot.id)}
                             disabled={!isEditing || (isSlotFull(slot.id) && !isSelected(day, slot.id))}
-                            className="w-4 h-4 accent-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                            className="w-4 h-4 accent-blue-600 disabled:opacity-70 cursor-pointer disabled:cursor-not-allowed"
                           />
                         </td>
                       ))}

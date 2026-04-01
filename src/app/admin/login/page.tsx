@@ -55,7 +55,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8"
+          style={{ backgroundColor: '#FAF2F0' }}>
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
 
         {/* Header */}

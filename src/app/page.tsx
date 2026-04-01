@@ -17,23 +17,19 @@ export default function Home() {
         <div className="space-y-4">
           <Link
             href="/admin/login"
-            className="flex items-center justify-center gap-3 w-full text-white py-4 rounded-xl hover:bg-blue-700 font-medium text-lg transition-colors"
-            style={{ backgroundColor: '#414141' }}
-          >
+            className="bg-[#414141] flex items-center justify-center gap-3 text-white py-4 rounded-xl font-medium text-3xl transition-colors">
             Admin Panel
           </Link>
 
           <Link
             href="/scan"
-            className="flex items-center justify-center gap-3 w-full text-white py-4 rounded-xl hover:bg-blue-50 font-medium text-lg transition-colors border-2 border-gray-600"
-            style={{ backgroundColor: '#414141' }}
-          >
+            className="bg-[#414141] flex items-center justify-center gap-3 text-white py-4 rounded-xl font-medium text-3xl transition-colors">
             Scan QR Code
           </Link>
         </div>
 
         {/* Footer */}
-        <p className="text-gray-300 text-sm mt-12">
+        <p className="text-black text-sm mt-12">
           © 2026 Create Foundation
         </p>
 

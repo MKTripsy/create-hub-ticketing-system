@@ -30,14 +30,20 @@ const isAdminRoute = pathname.startsWith('/admin')
         {/* Navigation Links */}
         <div className="flex items-center gap-6">
           <Link
+            href="/admin/attendance"
+            className="text-black hover:text-[#EEEEC6] text-sm font-medium"
+          >
+            Attendance
+          </Link>
+          <Link
             href="/admin/users"
-            className="text-gray-600 hover:text-blue-600 text-sm font-medium"
+            className="text-black hover:text-[#EEEEC6] text-sm font-medium"
           >
             Users
           </Link>
           <Link
             href="/scan"
-            className="text-gray-600 hover:text-blue-600 text-sm font-medium"
+            className="text-black hover:text-[#EEEEC6] text-sm font-medium"
           >
             Scan
           </Link>
@@ -48,7 +54,7 @@ const isAdminRoute = pathname.startsWith('/admin')
               </span>
               <button
                 onClick={logout}
-                className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 text-sm font-medium"
+                className=" bg-[#EEEEC6] text-black px-4 py-2 rounded-lg hover:bg-[#283e42] hover:text-white text-sm font-medium"
               >
           {/* {isAdminRoute ? (
             <button
@@ -62,17 +68,10 @@ const isAdminRoute = pathname.startsWith('/admin')
           ) : (
             <Link
               href="/"
-              className="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
-              style={{ backgroundColor: '#EEEEC6' }}
+              className="bg-[#EEEEC6] text-black px-4 py-2 rounded-lg hover:bg-[#283e42] hover:text-white text-sm font-medium"
             >
               Home
             </Link>)}
-          {/* <Link
-            href="/"
-            className="text-black px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium" style={{ backgroundColor: '#EEEEC6' }}
-          >
-            Home
-          </Link> */}
         </div>
       </div>
     </nav>

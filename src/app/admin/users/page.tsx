@@ -152,7 +152,7 @@ const handleDownloadPng = async () => {
           <h1 className="text-2xl font-bold text-gray-800">Users</h1>
           <a
             href="/admin/users/add"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
+            className="bg-[#cee4B8] text-black px-4 py-2 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium">
             Add User
           </a>
         </div>
