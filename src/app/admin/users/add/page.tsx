@@ -445,26 +445,26 @@ const handleSubmit = async (e: React.FormEvent) => {
                     <thead>
                       <tr>
                         <th className="text-left py-2 pr-4 text-gray-500 font-medium">
-                          Day
+                          Time
                         </th>
-                        {timeSlots.map(slot => (
-                          <th key={slot.id} className="text-center py-2 px-2 text-gray-500 font-medium text-xs">
-                            {slot.label}
-                            {isSlotFull(slot.id) && (
-                              <span className="block text-red-400 text-xs">Full</span>
-                            )}
+                        {DAYS.map(day => (
+                          <th key={day} className="text-center py-2 px-2 text-gray-500 font-medium text-xs">
+                            {day.slice(0, 3)}
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {DAYS.map(day => (
-                        <tr key={day} className="border-t">
-                          <td className="py-2 pr-4 text-gray-700 font-medium">
-                            {day}
+                      {timeSlots.map(slot => (
+                        <tr key={slot.id} className="border-t">
+                          <td className="py-2 pr-4 text-gray-700 font-medium whitespace-nowrap">
+                            {slot.label}
+                            {isSlotFull(slot.id) && (
+                              <span className="block text-red-400 text-xs">Full</span>
+                            )}
                           </td>
-                          {timeSlots.map(slot => (
-                            <td key={slot.id} className="text-center py-2 px-2">
+                          {DAYS.map(day => (
+                            <td key={day} className="text-center py-2 px-2">
                               <input
                                 type="checkbox"
                                 checked={isSelected(day, slot.id)}

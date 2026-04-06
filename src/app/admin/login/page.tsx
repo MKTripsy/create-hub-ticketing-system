@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import AdminGuard from '@/components/AdminGuard'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -24,7 +23,7 @@ export default function AdminLoginPage() {
     const success = await login(form.username, form.password)
 
     if (success) {
-      router.push('/admin/users')
+      router.push('/admin/dashboard')
     } else {
       setError('Invalid username or password')
     }

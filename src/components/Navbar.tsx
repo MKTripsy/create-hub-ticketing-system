@@ -30,6 +30,12 @@ const isAdminRoute = pathname.startsWith('/admin')
         {/* Navigation Links */}
         <div className="flex items-center gap-6">
           <Link
+            href="/admin/dashboard"
+            className="text-black hover:text-[#EEEEC6] text-sm font-medium"
+          >
+            Dashboard
+          </Link>
+          <Link
             href="/admin/attendance"
             className="text-black hover:text-[#EEEEC6] text-sm font-medium"
           >
@@ -46,6 +52,12 @@ const isAdminRoute = pathname.startsWith('/admin')
             className="text-black hover:text-[#EEEEC6] text-sm font-medium"
           >
             Scan
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="text-black hover:text-[#EEEEC6] text-sm font-medium"
+          >
+            Settings
           </Link>
           {isAdminRoute && admin ? (
             <div className="flex items-center gap-3">
