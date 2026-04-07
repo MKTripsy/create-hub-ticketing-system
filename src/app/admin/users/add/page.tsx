@@ -33,7 +33,7 @@ type SpaceTimeslotLimit = {
   current_count: number
 }
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+// const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 export default function AddUserPage() {
   const [spaces, setSpaces] = useState<Space[]>([])
@@ -46,6 +46,7 @@ export default function AddUserPage() {
   const [savedUser, setSavedUser] = useState({ first_name: '', last_name: '' })
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
   const qrRef = useRef<HTMLDivElement>(null)
+  const [operatingDays, setOperatingDays] = useState<string[]>([])
 
   const [form, setForm] = useState({
     first_name: '',
@@ -56,14 +57,30 @@ export default function AddUserPage() {
   })
 
   // Fetch spaces and time slots
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const [spacesRes, timeSlotsRes] = await Promise.all([
+  //       supabase.from('spaces').select('*').eq('is_active', true),
+  //       supabase.from('time_slots').select('*').eq('is_active', true).order('start_time')
+  //     ])
+  //     if (spacesRes.data) setSpaces(spacesRes.data)
+  //     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
+  //   }
+  //   fetchData()
+  // }, [])
   useEffect(() => {
     const fetchData = async () => {
-      const [spacesRes, timeSlotsRes] = await Promise.all([
+      const [spacesRes, timeSlotsRes, daysRes] = await Promise.all([
         supabase.from('spaces').select('*').eq('is_active', true),
-        supabase.from('time_slots').select('*').eq('is_active', true).order('start_time')
+        supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
+        supabase.from('operating_days').select('day').eq('is_active', true)
       ])
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
+      if (daysRes.data) {
+        setOperatingDays(daysRes.data.map(d => d.day))
+        console.log('Operating days fetched:', daysRes.data)
+      }
     }
     fetchData()
   }, [])
@@ -447,7 +464,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                         <th className="text-left py-2 pr-4 text-gray-500 font-medium">
                           Time
                         </th>
-                        {DAYS.map(day => (
+                        {operatingDays.map(day => (
                           <th key={day} className="text-center py-2 px-2 text-gray-500 font-medium text-xs">
                             {day.slice(0, 3)}
                           </th>
@@ -463,7 +480,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                               <span className="block text-red-400 text-xs">Full</span>
                             )}
                           </td>
-                          {DAYS.map(day => (
+                          {operatingDays.map(day => (
                             <td key={day} className="text-center py-2 px-2">
                               <input
                                 type="checkbox"

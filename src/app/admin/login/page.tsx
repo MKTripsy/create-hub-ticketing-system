@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Admin Login</h1>
-          <p className="text-gray-400 text-sm mt-1">House of Hope Attendance System</p>
+          <p className="text-gray-400 text-sm mt-1">Create Hub-HOH Attendance System</p>
         </div>
 
         {/* Error message */}

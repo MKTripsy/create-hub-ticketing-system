@@ -29,7 +29,7 @@ type SpaceTimeslotLimit = {
   current_count: number
 }
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+// const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 export default function EditUserPage() {
   const { id } = useParams()
@@ -43,6 +43,7 @@ export default function EditUserPage() {
   const [showQR, setShowQR] = useState(false)
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
   const [originalAvailability, setOriginalAvailability] = useState<AvailabilityEntry[]>([])
+  const [operatingDays, setOperatingDays] = useState<string[]>([])
 
   const [form, setForm] = useState({
     first_name: '',
@@ -61,7 +62,8 @@ export default function EditUserPage() {
         supabase.from('users').select('*').eq('id', id).single(),
         supabase.from('spaces').select('*').eq('is_active', true),
         supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
-        supabase.from('availability').select('day, time_slot_id').eq('user_id', id)
+        supabase.from('availability').select('day, time_slot_id').eq('user_id', id),
+        supabase.from('operating_days').select('day').eq('is_active', true)
       ])
 
       if (userRes.data) {
@@ -481,7 +483,7 @@ const handleDelete = async () => {
                     <th className="text-left py-2 pr-4 text-gray-500 font-medium">
                       Time
                     </th>
-                    {DAYS.map(day => (
+                    {operatingDays.map(day => (
                       <th key={day} className="text-center py-2 px-2 text-gray-500 font-medium text-xs">
                         {day.slice(0, 3)}
                       </th>
@@ -497,7 +499,7 @@ const handleDelete = async () => {
                           <span className="block text-red-400 text-xs">Full</span>
                         )}
                       </td>
-                      {DAYS.map(day => (
+                      {operatingDays.map(day => (
                         <td key={day} className="text-center py-2 px-2">
                           <input
                             type="checkbox"
