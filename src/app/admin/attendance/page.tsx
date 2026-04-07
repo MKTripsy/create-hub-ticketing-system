@@ -169,9 +169,9 @@ export default function AttendanceLogsPage() {
             </h1>
             <button
               onClick={fetchLogs}
-              className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm"
+              className="bg-[#cee4b8] text-black px-4 py-2 rounded-lg hover:bg-[#76bcad] hover:text-[#faf2f0] text-sm"
             >
-              🔄 Refresh
+               Refresh
             </button>
           </div>
 
