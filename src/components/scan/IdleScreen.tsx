@@ -35,8 +35,8 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
             onClick={() => setActiveTab('qr')}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'qr'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
+                ? 'border-[#76bcad] text-[#76bcad]'
+                : 'border-transparent text-gray-600 hover:text-black'
             }`}
           >
             Scan QR Code
@@ -45,8 +45,8 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
             onClick={() => setActiveTab('manual')}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'manual'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
+                ? 'border-[#76bcad] text-[#76bcad]'
+                : 'border-transparent text-gray-600 hover:text-black'
             }`}
           >
             Enter ID
@@ -57,7 +57,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
         {activeTab === 'qr' && (
           <button
             onClick={onStartScan}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium text-lg"
+            className="w-full bg-[#cee4b8] text-black py-3 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium text-lg"
           >
             Start Scanning
           </button>
@@ -74,13 +74,13 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
               value={manualId}
               onChange={e => setManualId(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="e.g. HOH-26-0001"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. HOH-26-XXXX"
+              className="w-full border border-[#cee4b8] rounded-lg px-3 py-2 text-black mb-4 focus:outline-none focus:ring-2 focus:ring-[#cee4b8]"
             />
             <button
               onClick={handleSearch}
               disabled={loading || !manualId.trim()}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+              className="w-full bg-[#cee4b8] text-black py-2 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium "
             >
               {loading ? 'Searching...' : 'Search User'}
             </button>

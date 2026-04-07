@@ -54,8 +54,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8"
-          style={{ backgroundColor: '#FAF2F0' }}>
+    <div className="min-h-screen bg-[#faf2f0] flex items-center justify-center p-8">
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
 
         {/* Header */}
@@ -84,7 +83,7 @@ export default function AdminLoginPage() {
               required
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-[#76bcad] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#76bcad]"
               placeholder="Enter username"
             />
           </div>
@@ -108,7 +107,7 @@ export default function AdminLoginPage() {
                     required
                     value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    className="w-full border border-[#76bcad] rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#76bcad] text-black"
                     placeholder="Enter password"
                 />
                 <button
@@ -125,7 +124,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium mt-2"
+            className="w-full bg-[#cee4b8] text-[#414141] py-2 rounded-lg hover:bg-[#76bcad] hover:text-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed font-l mt-2"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
