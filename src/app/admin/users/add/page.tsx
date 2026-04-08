@@ -73,7 +73,7 @@ export default function AddUserPage() {
       const [spacesRes, timeSlotsRes, daysRes] = await Promise.all([
         supabase.from('spaces').select('*').eq('is_active', true),
         supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
-        supabase.from('operating_days').select('day').eq('is_active', true)
+        supabase.from('operating_days').select('day').eq('is_active', true).order("id")
       ])
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)

@@ -58,12 +58,12 @@ export default function EditUserPage() {
   // Fetch user data
   useEffect(() => {
     const fetchData = async () => {
-      const [userRes, spacesRes, timeSlotsRes, availRes] = await Promise.all([
+      const [userRes, spacesRes, timeSlotsRes, availRes, daysRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', id).single(),
         supabase.from('spaces').select('*').eq('is_active', true),
         supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
         supabase.from('availability').select('day, time_slot_id').eq('user_id', id),
-        supabase.from('operating_days').select('day').eq('is_active', true)
+        supabase.from('operating_days').select('day').eq('is_active', true).order('id')
       ])
 
       if (userRes.data) {
@@ -79,6 +79,7 @@ export default function EditUserPage() {
       }
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
+      if (daysRes.data) setOperatingDays(daysRes.data.map(d => d.day))
       if (availRes.data) {
         setAvailability(availRes.data)
         setOriginalAvailability(availRes.data)
