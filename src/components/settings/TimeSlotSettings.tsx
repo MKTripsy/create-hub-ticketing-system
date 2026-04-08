@@ -86,7 +86,7 @@ export default function TimeSlotSettings() {
         <h2 className="text-lg font-semibold text-gray-800">Time Slots</h2>
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+          className="bg-[#CEE4B8] text-black px-4 py-2 rounded-lg hover:bg-[#414141] hover:text-white text-sm font-medium"
         >
           + Add Slot
         </button>
@@ -132,7 +132,7 @@ export default function TimeSlotSettings() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-[#FAF2F0] fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {editingSlot ? 'Edit Time Slot' : 'Add Time Slot'}

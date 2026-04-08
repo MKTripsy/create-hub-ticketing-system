@@ -103,7 +103,7 @@ export default function AdminAccountSettings() {
                 type="text"
                 value={form.first_name}
                 onChange={e => setForm({ ...form, first_name: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               />
             </div>
             <div className="flex-1">
@@ -112,7 +112,7 @@ export default function AdminAccountSettings() {
                 type="text"
                 value={form.last_name}
                 onChange={e => setForm({ ...form, last_name: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               />
             </div>
           </div>
@@ -122,13 +122,13 @@ export default function AdminAccountSettings() {
               type="text"
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
           </div>
           <button
             onClick={handleSaveInfo}
             disabled={savingInfo}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+            className="w-full bg-[#FF6347] text-white hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
           >
             {savingInfo ? 'Saving...' : 'Save Changes'}
           </button>
@@ -147,7 +147,7 @@ export default function AdminAccountSettings() {
               type={showPasswords ? 'text' : 'password'}
               value={passwords.current}
               onChange={e => setPasswords({ ...passwords, current: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
           </div>
           <div>
@@ -156,7 +156,7 @@ export default function AdminAccountSettings() {
               type={showPasswords ? 'text' : 'password'}
               value={passwords.new}
               onChange={e => setPasswords({ ...passwords, new: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
           </div>
           <div>
@@ -165,7 +165,7 @@ export default function AdminAccountSettings() {
               type={showPasswords ? 'text' : 'password'}
               value={passwords.confirm}
               onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -173,14 +173,14 @@ export default function AdminAccountSettings() {
               type="checkbox"
               checked={showPasswords}
               onChange={() => setShowPasswords(!showPasswords)}
-              className="w-4 h-4 accent-blue-600"
+              className="w-4 h-4 accent-[#FF6347]"
             />
             <span className="text-sm text-gray-600">Show passwords</span>
           </label>
           <button
             onClick={handleSavePassword}
             disabled={savingPassword}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+            className="w-full bg-[#FF6347] text-white hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
           >
             {savingPassword ? 'Updating...' : 'Update Password'}
           </button>

@@ -98,7 +98,7 @@ export default function SurveyOptionSettings() {
         <h2 className="text-lg font-semibold text-gray-800">Survey Options</h2>
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+          className="bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           + Add Option
         </button>
@@ -158,7 +158,7 @@ export default function SurveyOptionSettings() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[#FAF2F0] flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {editingOption ? 'Edit Option' : 'Add Option'}

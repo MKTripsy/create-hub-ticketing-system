@@ -87,7 +87,7 @@ export default function SpaceSettings() {
         <h2 className="text-lg font-semibold text-gray-800">Spaces</h2>
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+          className="bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           + Add Space
         </button>
@@ -147,7 +147,7 @@ export default function SpaceSettings() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[#FAF2F0] flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {editingSpace ? 'Edit Space' : 'Add Space'}
@@ -160,7 +160,7 @@ export default function SpaceSettings() {
                   value={form.space_name}
                   onChange={e => setForm({ ...form, space_name: e.target.value })}
                   placeholder="e.g. Arts Space"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -173,7 +173,7 @@ export default function SpaceSettings() {
                       checked={form.age_group === 'Junior'}
                       onChange={e => setForm({ ...form, age_group: e.target.value })}
                     />
-                    <span className="text-sm">Junior</span>
+                    <span className="text-sm text-black">Junior</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -182,7 +182,7 @@ export default function SpaceSettings() {
                       checked={form.age_group === 'Senior'}
                       onChange={e => setForm({ ...form, age_group: e.target.value })}
                     />
-                    <span className="text-sm">Senior</span>
+                    <span className="text-sm text-black">Senior</span>
                   </label>
                 </div>
               </div>
@@ -193,7 +193,7 @@ export default function SpaceSettings() {
                     type="number"
                     value={form.min_grade}
                     onChange={e => setForm({ ...form, min_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="flex-1">
@@ -202,7 +202,7 @@ export default function SpaceSettings() {
                     type="number"
                     value={form.max_grade}
                     onChange={e => setForm({ ...form, max_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
