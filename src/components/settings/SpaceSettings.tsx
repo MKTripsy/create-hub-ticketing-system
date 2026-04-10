@@ -125,7 +125,7 @@ export default function SpaceSettings() {
                   onClick={() => openEdit(space)}
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  ✏️ Edit
+                   Edit
                 </button>
                 <button
                     onClick={() => handleDelete(space)}
@@ -160,7 +160,7 @@ export default function SpaceSettings() {
                   value={form.space_name}
                   onChange={e => setForm({ ...form, space_name: e.target.value })}
                   placeholder="e.g. Arts Space"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
                 />
               </div>
               <div>
@@ -168,6 +168,7 @@ export default function SpaceSettings() {
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
+                      className="accent-[#CEE4B8]"
                       type="radio"
                       value="Junior"
                       checked={form.age_group === 'Junior'}
@@ -177,6 +178,7 @@ export default function SpaceSettings() {
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
+                      className="accent-[#CEE4B8]"
                       type="radio"
                       value="Senior"
                       checked={form.age_group === 'Senior'}
@@ -193,7 +195,7 @@ export default function SpaceSettings() {
                     type="number"
                     value={form.min_grade}
                     onChange={e => setForm({ ...form, min_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
                   />
                 </div>
                 <div className="flex-1">
@@ -202,7 +204,7 @@ export default function SpaceSettings() {
                     type="number"
                     value={form.max_grade}
                     onChange={e => setForm({ ...form, max_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
                   />
                 </div>
               </div>
@@ -211,7 +213,7 @@ export default function SpaceSettings() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+                className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>

@@ -17,15 +17,15 @@ export default function Home() {
         <div className="space-y-4">
           <Link
             href="/admin/login"
-            className="bg-[#ff6347] flex items-center justify-center gap-3 text-[#eeeec6] py-4 rounded-xl hover:bg-[#414141] font-medium text-3xl transition-colors">
+            className="bg-[#ff6347] w-fit px-8 items-center justify-center gap-3 text-[#eeeec6] py-4 rounded-4xl hover:bg-[#414141] font-medium text-3xl transition-colors">
             Admin Panel
           </Link>
-
+{/* 
           <Link
             href="/scan"
             className="bg-[#ff6347] flex items-center justify-center gap-3 text-[#eeeec6] py-4 rounded-xl hover:bg-[#414141] font-medium text-3xl transition-colors">
             Scan QR Code
-          </Link>
+          </Link> */}
         </div>
 
         {/* Footer */}

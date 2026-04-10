@@ -157,7 +157,7 @@ export default function TimeSlotSettings() {
                 />
               </div>
               {form.start_time && form.end_time && (
-                <p className="text-sm text-blue-600">
+                <p className="text-sm text-black">
                   Label: {generateLabel(form.start_time, form.end_time)}
                 </p>
               )}
@@ -166,13 +166,13 @@ export default function TimeSlotSettings() {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.start_time || !form.end_time}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+                className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg"
               >
                 Cancel
               </button>

@@ -112,7 +112,7 @@ export default function SurveyOptionSettings() {
             onClick={() => setSelectedSpace(space.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedSpace === space.id
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#CEE4B8] text-black'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -142,7 +142,7 @@ export default function SurveyOptionSettings() {
                   onClick={() => openEdit(option)}
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  ✏️ Edit
+                   Edit
                 </button>
                 <button
                 onClick={() => handleDelete(option)}
@@ -177,7 +177,7 @@ export default function SurveyOptionSettings() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+                className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>

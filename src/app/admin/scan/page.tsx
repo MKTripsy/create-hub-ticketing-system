@@ -12,6 +12,7 @@ import AlreadyClockedInScreen from '@/components/scan/AlreadyClockedInScreen'
 import PreSurveyScreen from '@/components/scan/PreSurveyScreen'
 import ClockedInScreen from '@/components/scan/ClockedInScreen'
 import ClockedOutScreen from '@/components/scan/ClockedOutScreen'
+import AdminGuard from '@/components/AdminGuard'
 
 export default function ScanPage() {
   const [scanState, setScanState] = useState<ScanState>('idle')
