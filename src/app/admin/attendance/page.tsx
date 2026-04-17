@@ -140,12 +140,20 @@ export default function AttendanceLogsPage() {
     return fullName.includes(searchName.toLowerCase())
   })
 
+  // const formatTime = (timestamp: string) => {
+  //   return new Date(timestamp).toLocaleTimeString([], {
+  //     hour: '2-digit',
+  //     minute: '2-digit'
+  //   })
+  // }
+
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+  return new Date(timestamp).toLocaleTimeString('en-PH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Manila'
+  })
+}
 
   const formatDuration = (start: string, end: string | null) => {
     if (!end) return 'Still clocked in'
@@ -205,17 +213,17 @@ export default function AttendanceLogsPage() {
               />
             </div>
 
-            {/* Filter by space */}
+            {/* Filter by component (space) */}
             <div className="flex-1 min-w-48">
               <label className="block text-xs font-medium text-black mb-1">
-                Filter by space
+                Filter by Component
               </label>
               <select
                 value={filterSpace}
                 onChange={e => setFilterSpace(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Spaces</option>
+                <option value="">All Components</option>
                 {spaces.map(space => (
                   <option key={space.id} value={space.id}>
                     {space.space_name}
@@ -260,7 +268,7 @@ export default function AttendanceLogsPage() {
                     <tr>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">ID</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Space</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Component</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Clock In</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Clock Out</th>

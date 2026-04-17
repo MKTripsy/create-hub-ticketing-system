@@ -89,7 +89,7 @@ export default function SpaceSettings() {
           onClick={openAdd}
           className="bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
-          + Add Space
+          Add Component
         </button>
       </div>
 
@@ -159,7 +159,7 @@ export default function SpaceSettings() {
                   type="text"
                   value={form.space_name}
                   onChange={e => setForm({ ...form, space_name: e.target.value })}
-                  placeholder="e.g. Arts Space"
+                  placeholder="e.g. Component"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
                 />
               </div>

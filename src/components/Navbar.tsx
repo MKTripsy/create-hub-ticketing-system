@@ -18,7 +18,7 @@ export default function Navbar() {
     { href: '/admin/dashboard', label: 'Dashboard'},
     { href: '/admin/users', label: 'Users'},
     { href: '/admin/attendance', label: 'Attendance'},
-    { href: '/admin/scan', label: 'Scan'},
+    { href: '/scan', label: 'Scan'},
     { href: '/admin/settings', label: 'Settings'}
   ]
 
@@ -67,7 +67,7 @@ export default function Navbar() {
         {/* Admin info */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
           <p className="text-xs text-black mb-1">Logged in as</p>
-          <p className="text-sm font-medium border-[#FF6347]">
+          <p className="text-xl font-bold border-[#FF6347]">
             {admin.first_name} {admin.last_name}
           </p>
         </div>

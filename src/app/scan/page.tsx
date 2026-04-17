@@ -52,7 +52,8 @@ export default function ScanPage() {
   }
 
   const checkActiveSession = async (userId: number): Promise<AttendanceSession | null> => {
-    const today = new Date().toISOString().split('T')[0]
+    // const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
     const { data } = await supabase
       .from('attendance_session')
       .select('id, time_started')
@@ -112,7 +113,8 @@ export default function ScanPage() {
 
   const handleClockIn = async () => {
     if (!currentUser || !currentTimeSlot) return
-    const today = new Date().toISOString().split('T')[0]
+    // const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const todayName = days[new Date().getDay()]
 
@@ -130,8 +132,10 @@ export default function ScanPage() {
         user_id: currentUser.id,
         accessed_space: currentUser.space_id,
         availability_id: availData?.id || null,
-        date: today,
-        time_started: new Date().toISOString(),
+        // date: today,
+        // time_started: new Date().toISOString(),
+        date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' }),
+        time_started: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Manila' }).replace(' ', 'T'),
       })
       .select()
       .single()
@@ -157,7 +161,8 @@ export default function ScanPage() {
 
     const { error } = await supabase
       .from('attendance_session')
-      .update({ time_ended: new Date().toISOString() })
+      // .update({ time_ended: new Date().toISOString() })
+      .update({ time_ended: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Manila' }).replace(' ', 'T')})
       .eq('id', sessionId)
 
     if (error) { alert('Something went wrong.'); return }

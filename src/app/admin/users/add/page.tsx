@@ -181,6 +181,10 @@ export default function AddUserPage() {
   }
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
+  if (availability.length === 0) {
+    alert('Please select at least one available day and time slot.')
+    return
+  }
   setLoading(true)
 
   try {
@@ -285,7 +289,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="min-h-screen bg-[#FAF2F0] flex items-center justify-center p-8">
         <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
           <h2 className="text-2xl font-bold text-green-600 mb-2">
-            ✅ User Added Successfully!
+              User Added Successfully!
           </h2>
           <p className="text-black mb-6">
             {savedUser.first_name} {savedUser.last_name} has been registered.
@@ -316,7 +320,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="flex gap-3">
             <button
               onClick={handleReset}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              className="flex-1 bg-[#CEE4B8] text-black py-2 rounded-lg hover:bg-[#414141] hover:text-white"
             >
               Add Another User
             </button>
@@ -358,7 +362,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                   value={form.first_name}
                   onChange={e => setForm({ ...form, first_name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#cee4B8]"
                   placeholder="First Name"
                 />
               </div>
@@ -373,7 +377,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                   value={form.last_name}
                   onChange={e => setForm({ ...form, last_name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#cee4B8]"
                   placeholder="Last Name"
                 />
               </div>
@@ -388,7 +392,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                   value={form.birthdate}
                   onChange={e => setForm({ ...form, birthdate: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#cee4B8]"
                 />
               </div>
 
@@ -401,7 +405,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                   value={form.grade_level}
                   onChange={e => setForm({ ...form, grade_level: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#cee4B8]"
                 >
                   <option value="">Select grade level</option>
                   <option value="1">Grade 1</option>
@@ -422,13 +426,14 @@ const handleSubmit = async (e: React.FormEvent) => {
               {/* Space Assignment */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Space Assignment <span className="text-red-500">*</span>
+                  Component Assignment <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-4">
                   {spaces.map(space => (
                     <label key={space.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
+                        className="accent-[#CEE4B8]"
                         name="space"
                         value={space.id}
                         checked={form.space_id === space.id.toString()}
@@ -440,7 +445,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </div>
                 {form.grade_level && (
                   <p className="text-xs text-blue-500 mt-1">
-                    ℹ️ Auto-assigned based on grade level. You may override this.
+                    Auto-assigned based on grade level. You may override this.
                   </p>
                 )}
               </div>
@@ -450,7 +455,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             {form.space_id && (
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                  Availability <span className="text-sm font-normal text-gray-400">(Optional)</span>
+                  Availability
                 </h2>
                 <p className="text-sm text-gray-500">
                   Select which days and time slots this child is available.
@@ -487,7 +492,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 checked={isSelected(day, slot.id)}
                                 onChange={() => toggleAvailability(day, slot.id)}
                                 disabled={isSlotFull(slot.id) && !isSelected(day, slot.id)}
-                                className="w-4 h-4 accent-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                                className="w-4 h-4 accent-[#CEE4B8] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                               />
                             </td>
                           ))}
@@ -499,7 +504,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
                 {availability.length > 0 && (
                   <p className="text-xs text-green-600">
-                    ✅ {availability.length} slot{availability.length > 1 ? 's' : ''} selected
+                     {availability.length} slot{availability.length > 1 ? 's' : ''} selected
                   </p>
                 )}
               </div>
@@ -509,7 +514,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             <button
               type="submit"
               disabled={loading || !form.space_id}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {loading ? 'Adding User...' : 'Add User'}
             </button>

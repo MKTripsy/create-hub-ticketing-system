@@ -173,17 +173,24 @@ export default function DashboardPage() {
     fetchDashboardData()
   }, [])
 
+  // const formatTime = (timestamp: string) => {
+  //   return new Date(timestamp).toLocaleTimeString([], {
+  //     hour: '2-digit',
+  //     minute: '2-digit'
+  //   })
+  // }
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+    return new Date(timestamp).toLocaleTimeString('en-PH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Manila'
+      })
+    }
 
   const statCards: StatCard[] = [
     { label: 'Total Active Users', value: totalUsers, color: 'bg-blue-50 text-blue-600', icon: '👥' },
-    { label: 'Clocked In Today', value: clockedInToday, color: 'bg-green-50 text-green-600', icon: '✅' },
-    { label: 'Currently Active', value: activeNow, color: 'bg-purple-50 text-purple-600', icon: '🟢' },
+    // { label: 'Clocked In Today', value: clockedInToday, color: 'bg-green-50 text-green-600', icon: '✅' },
+    { label: 'Currently Clocked-In', value: activeNow, color: 'bg-purple-50 text-purple-600', icon: '🟢' },
     { label: 'Completed Today', value: clockedOutToday, color: 'bg-orange-50 text-orange-600', icon: '🏁' },
   ]
 
@@ -224,7 +231,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 gap-4 mb-8 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 mb-8 lg:grid-cols-3">
             {statCards.map(card => (
               <div key={card.label} className="bg-white rounded-xl shadow p-6">
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${card.color} text-2xl mb-4`}>
@@ -260,7 +267,7 @@ export default function DashboardPage() {
             {/* Space Distribution Pie Chart */}
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-6">
-                Today's Space Usage
+                Today's Component  Usage
               </h2>
               {spaceData.every(d => d.value === 0) ? (
                 <div className="flex items-center justify-center h-48">

@@ -161,7 +161,7 @@ const handleDownloadPng = async () => {
         {users.length === 0 ? (
           <div className="bg-white rounded-xl shadow p-12 text-center">
             <p className="text-gray-400 text-lg mb-4">No users added yet</p>
-            <a href="/admin/users/add" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <a href="/admin/users/add" className="bg-[#cee4B8] text-black px-4 py-2 rounded-lg hover:bg-[#76bcad] hover:text-white">
               Add your first user
             </a>
           </div>
@@ -308,6 +308,6 @@ const handleDownloadPng = async () => {
 
       </div>
     </div>
-    </AdminGuard>
+  </AdminGuard>
   )
 }

@@ -15,8 +15,8 @@ export default function SettingsPage() {
 
   const tabs: { id: Tab; label: string }[] = [
   { id: 'timeslots', label: 'Time Slots' },
-  { id: 'survey', label: 'Survey Options' },
-  { id: 'spaces', label: 'Spaces' },
+  { id: 'survey', label: 'Surveys' },
+  { id: 'spaces', label: 'Components' },
   { id: 'days', label: 'Operating Days' },
   { id: 'account', label: 'Account' },
 ]
@@ -49,9 +49,9 @@ export default function SettingsPage() {
           {/* Tab Content */}
           <div className="bg-white rounded-xl shadow p-6">
             {activeTab === 'timeslots' && <TimeSlotSettings />}
-            {activeTab === 'survey' && <SurveyOptionSettings />}
-            {activeTab === 'spaces' && <SpaceSettings />}
             {activeTab === 'days' && <OperatingDaysSettings />}
+            {activeTab === 'spaces' && <SpaceSettings />}
+            {activeTab === 'survey' && <SurveyOptionSettings />}
             {activeTab === 'account' && <AdminAccountSettings />}
           </div>
 

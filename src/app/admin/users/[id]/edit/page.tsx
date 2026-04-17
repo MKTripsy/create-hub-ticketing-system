@@ -151,6 +151,10 @@ export default function EditUserPage() {
   }
 
   const handleSave = async () => {
+    if (availability.length === 0) {
+      alert('Please select at least one available day and time slot.')
+    return
+    }
     setSaving(true)
 
     try {
@@ -448,7 +452,7 @@ const handleDelete = async () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Space Assignment
+                Component Assignment
               </label>
               <div className="flex gap-4">
                 {spaces.map(space => (
@@ -505,9 +509,16 @@ const handleDelete = async () => {
                           <input
                             type="checkbox"
                             checked={isSelected(day, slot.id)}
-                            onChange={() => toggleAvailability(day, slot.id)}
-                            disabled={isSlotFull(slot.id) && !isSelected(day, slot.id)}
-                            className="w-4 h-4 accent-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                            // onChange={() => toggleAvailability(day, slot.id)}
+                            // disabled={isSlotFull(slot.id) && !isSelected(day, slot.id)}
+                            onChange={() => isEditing && toggleAvailability(day, slot.id)}
+                            disabled={!isEditing || (isSlotFull(slot.id) && !isSelected(day, slot.id))}
+                            className="w-4 h-4 accent-[#CEE4B8] disabled:cursor-not-allowed
+                            ${
+                              !isEditing 
+                                ? 'opacity-40 cursor-not-allowed' 
+                                : 'cursor-pointer'
+                            }`}"
                           />
                         </td>
                       ))}
