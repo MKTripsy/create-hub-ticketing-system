@@ -9,6 +9,18 @@ export default function ClockedOutScreen({ user }: Props) {
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-center">
         {/* <div className="text-6xl mb-4">👋</div> */}
+        {/* Profile photo */}
+        {user?.photo_url ? (
+          <img
+            src={user.photo_url}
+            alt={user.first_name}
+            className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-green-100"
+          />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-4xl mx-auto mb-4">
+            👤
+          </div>
+        )}
         <h2 className="text-3xl font-bold text-blue-600 mb-2">Clocked Out!</h2>
         <p className="text-gray-500 mb-6">
           {user?.first_name} {user?.last_name}

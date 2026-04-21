@@ -78,7 +78,7 @@ export default function ScanPage() {
       .from('users')
       .select(`
         id, custom_id, first_name, last_name,
-        grade_level, space_id,
+        grade_level, space_id, photo_url,
         spaces ( id, space_name )
       `)
       .eq('is_active', true)

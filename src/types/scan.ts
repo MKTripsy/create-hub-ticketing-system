@@ -10,6 +10,7 @@ export type User = {
   last_name: string
   grade_level: string
   space_id: number
+  photo_url: string | null
   spaces: Space | null
 }
 

@@ -34,6 +34,7 @@ type User = {
   grade_level: string
   qr_code: string
   is_active: boolean
+  photo_url: string | null
   spaces: Space | null
 }
 
@@ -59,6 +60,7 @@ export default function UserListPage() {
       grade_level,
       qr_code,
       is_active,
+      photo_url,
       spaces (
         space_name
       )
@@ -170,6 +172,7 @@ const handleDownloadPng = async () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Profile Picture</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">ID</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Name</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Grade</th>
@@ -181,6 +184,19 @@ const handleDownloadPng = async () => {
               <tbody className="divide-y divide-gray-100">
                 {users.map(user => (
                   <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      {user.photo_url ? (
+                        <img
+                          src={user.photo_url}
+                          alt={user.first_name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                          👤
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">
                       {user.custom_id}
                     </td>

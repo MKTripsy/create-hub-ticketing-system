@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import AdminGuard from './AdminGuard'
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -28,7 +29,7 @@ export default function Navbar() {
   }
 
   return (
-    <>
+    <AdminGuard>
       {/* Hamburger button — top left corner */}
       <button
         onClick={() => setSidebarOpen(true)}
@@ -103,7 +104,7 @@ export default function Navbar() {
         </div>
 
       </div>
-    </>
+    </AdminGuard>
   )
 }
 

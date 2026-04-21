@@ -44,6 +44,10 @@ export default function EditUserPage() {
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
   const [originalAvailability, setOriginalAvailability] = useState<AvailabilityEntry[]>([])
   const [operatingDays, setOperatingDays] = useState<string[]>([])
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const cleanId = Array.isArray(id) ? id[0] : id    // ← add
+  const numericId = parseInt(cleanId as string)       // ← add
 
   const [form, setForm] = useState({
     first_name: '',
@@ -76,6 +80,9 @@ export default function EditUserPage() {
           qr_code: userRes.data.qr_code,
           is_active: userRes.data.is_active,
         })
+        if (userRes.data.photo_url) {
+          setPhotoPreview(userRes.data.photo_url) // ← add
+        }
       }
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
@@ -191,6 +198,17 @@ export default function EditUserPage() {
         if (availError) throw availError
       }
 
+      // Upload photo if changed
+      if (photoFile) {
+        const photoUrl = await uploadPhoto(numericId)
+        if (photoUrl) {
+          await supabase
+            .from('users')
+            .update({ photo_url: photoUrl })
+            .eq('id', numericId)
+        }
+      }
+
       setIsEditing(false)
       alert('User updated successfully!')
 
@@ -200,6 +218,35 @@ export default function EditUserPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  const uploadPhoto = async (userId: number): Promise<string | null> => {
+    if (!photoFile) return null
+
+    const fileExt = photoFile.name.split('.').pop()
+    const fileName = `${userId}.${fileExt}`
+
+    const { error } = await supabase.storage
+      .from('profile-photos')
+      .upload(fileName, photoFile, { upsert: true })
+
+    if (error) {
+      console.error('Photo upload error:', error)
+      return null
+    }
+
+    const { data } = supabase.storage
+      .from('profile-photos')
+      .getPublicUrl(fileName)
+
+    return data.publicUrl
   }
 
   const handleDeactivate = async () => {
@@ -395,7 +442,7 @@ const handleDelete = async () => {
                 value={form.first_name}
                 onChange={e => setForm({ ...form, first_name: e.target.value })}
                 disabled={!isEditing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] disabled:bg-gray-50 disabled:text-gray-500"
               />
             </div>
 
@@ -408,8 +455,57 @@ const handleDelete = async () => {
                 value={form.last_name}
                 onChange={e => setForm({ ...form, last_name: e.target.value })}
                 disabled={!isEditing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] disabled:bg-gray-50 disabled:text-gray-500"
               />
+            </div>
+
+            {/* Profile Photo */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Profile Photo
+              </label>
+              <div className="flex items-center gap-4">
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Preview"
+                    className="w-20 h-20 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-3xl border border-gray-200">
+                    👤
+                  </div>
+                )}
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                    id="photo-upload"
+                    disabled={!isEditing}
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className={`px-4 py-2 rounded-lg text-sm ${
+                      isEditing
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer'
+                        : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Choose Photo
+                  </label>
+                  {photoPreview && isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                      className="ml-2 text-red-500 hover:text-red-700 text-sm"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -421,7 +517,7 @@ const handleDelete = async () => {
                 value={form.birthdate}
                 onChange={e => setForm({ ...form, birthdate: e.target.value })}
                 disabled={!isEditing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] disabled:bg-gray-50 disabled:text-gray-500"
               />
             </div>
 
@@ -433,7 +529,7 @@ const handleDelete = async () => {
                 value={form.grade_level}
                 onChange={e => setForm({ ...form, grade_level: e.target.value })}
                 disabled={!isEditing}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] disabled:bg-gray-50 disabled:text-gray-500"
               >
                 <option value="1">Grade 1</option>
                 <option value="2">Grade 2</option>
@@ -462,6 +558,7 @@ const handleDelete = async () => {
                   >
                     <input
                       type="radio"
+                      className="accent-[#FF6347]"
                       name="space"
                       value={space.id}
                       checked={form.space_id === space.id.toString()}
@@ -513,7 +610,7 @@ const handleDelete = async () => {
                             // disabled={isSlotFull(slot.id) && !isSelected(day, slot.id)}
                             onChange={() => isEditing && toggleAvailability(day, slot.id)}
                             disabled={!isEditing || (isSlotFull(slot.id) && !isSelected(day, slot.id))}
-                            className="w-4 h-4 accent-[#CEE4B8] disabled:cursor-not-allowed
+                            className="w-4 h-4 accent-[#FF6347] disabled:cursor-not-allowed
                             ${
                               !isEditing 
                                 ? 'opacity-40 cursor-not-allowed' 
@@ -543,7 +640,7 @@ const handleDelete = async () => {
               </button>
               <button
                 onClick={handlePrint}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm"
               >
                 Print QR
               </button>
@@ -561,7 +658,7 @@ const handleDelete = async () => {
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
+                  className="flex-1 bg-[#EEEEC6] text-black py-2 rounded-lg hover:bg-[#414141] hover:text-white font-medium"
                 >
                   Edit
                 </button>
@@ -595,7 +692,7 @@ const handleDelete = async () => {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+                  className="flex-1 bg-[#CEE4B8] text-black py-2 rounded-lg hover:bg-[#414141] hover:text-white font-medium disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>

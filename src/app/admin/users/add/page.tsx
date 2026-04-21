@@ -47,6 +47,8 @@ export default function AddUserPage() {
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([])
   const qrRef = useRef<HTMLDivElement>(null)
   const [operatingDays, setOperatingDays] = useState<string[]>([])
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     first_name: '',
@@ -210,6 +212,15 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (userError) {
       console.error('User insert error:', userError)
       throw userError
+    } // Upload photo if selected
+    if (photoFile) {
+      const photoUrl = await uploadPhoto(newUser.id)
+      if (photoUrl) {
+        await supabase
+          .from('users')
+          .update({ photo_url: photoUrl })
+          .eq('id', newUser.id)
+      }
     }
 
     console.log('User created:', newUser)
@@ -253,12 +264,43 @@ const handleSubmit = async (e: React.FormEvent) => {
     setLoading(false)
   }
 }
+  //Photo Upload Handler
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {     
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  //Photo Upload Function
+  const uploadPhoto = async (userId: number): Promise<string | null> => {
+  if (!photoFile) return null
+
+  const fileExt = photoFile.name.split('.').pop()
+  const fileName = `${userId}.${fileExt}`
+  const { error } = await supabase.storage
+      .from('profile-photos')
+      .upload(fileName, photoFile, { upsert: true })
+
+    if (error) {
+      console.error('Photo upload error:', error)
+      return null
+    }
+
+    const { data } = supabase.storage
+      .from('profile-photos')
+      .getPublicUrl(fileName)
+
+    return data.publicUrl
+  }
 
   const handleReset = () => {
     setSuccess(false)
     setGeneratedId('')
     setQrValue('')
     setAvailability([])
+    setPhotoFile(null)      // ← add
+    setPhotoPreview(null)   // ← add
     setForm({
       first_name: '',
       last_name: '',
@@ -380,6 +422,50 @@ const handleSubmit = async (e: React.FormEvent) => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#cee4B8]"
                   placeholder="Last Name"
                 />
+              </div>
+
+              {/* Profile Photo */}
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Profile Photo
+                </label>
+                <div className="flex items-center gap-4">
+                  {photoPreview ? (
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="w-20 h-20 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-3xl border border-gray-200">
+                      👤
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <label
+                      htmlFor="photo-upload"
+                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm cursor-pointer"
+                    >
+                      Choose Photo
+                    </label>
+                    {photoPreview && (
+                      <button
+                        type="button"
+                        onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                        className="ml-2 text-red-500 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Birthdate */}
