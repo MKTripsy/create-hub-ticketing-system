@@ -206,6 +206,8 @@ export default function EditUserPage() {
             .from('users')
             .update({ photo_url: photoUrl })
             .eq('id', numericId)
+            setPhotoPreview(photoUrl) // ← add this line
+            setPhotoFile(null)        // ← add this line
         }
       }
 
@@ -227,12 +229,46 @@ export default function EditUserPage() {
     setPhotoPreview(URL.createObjectURL(file))
   }
 
+  // const uploadPhoto = async (userId: number): Promise<string | null> => {
+  //   if (!photoFile) return null
+
+  //   const fileExt = photoFile.name.split('.').pop()
+  //   const fileName = `${userId}.${fileExt}`
+
+  //   const { error } = await supabase.storage
+  //     .from('profile-photos')
+  //     .upload(fileName, photoFile, { upsert: true })
+
+  //   if (error) {
+  //     console.error('Photo upload error:', error)
+  //     return null
+  //   }
+
+  //   const { data } = supabase.storage
+  //     .from('profile-photos')
+  //     .getPublicUrl(fileName)
+
+  //   return data.publicUrl
+  // }
+
   const uploadPhoto = async (userId: number): Promise<string | null> => {
-    if (!photoFile) return null
+  if (!photoFile) return null
 
-    const fileExt = photoFile.name.split('.').pop()
-    const fileName = `${userId}.${fileExt}`
+  const fileExt = photoFile.name.split('.').pop()
+  const fileName = `user-${userId}.${fileExt}`
 
+  // Delete old photo first
+  const { data: existingFiles } = await supabase.storage
+      .from('profile-photos')
+      .list('', { search: `user-${userId}` })
+
+    if (existingFiles && existingFiles.length > 0) {
+      await supabase.storage
+        .from('profile-photos')
+        .remove(existingFiles.map(f => f.name))
+    }
+
+    // Upload new photo
     const { error } = await supabase.storage
       .from('profile-photos')
       .upload(fileName, photoFile, { upsert: true })
@@ -247,6 +283,30 @@ export default function EditUserPage() {
       .getPublicUrl(fileName)
 
     return data.publicUrl
+  }
+
+  const handleRemovePhoto = async () => {
+    if (!confirm('Are you sure you want to remove this photo?')) return
+
+    // Delete from storage
+    const { data: existingFiles } = await supabase.storage
+      .from('profile-photos')
+      .list('', { search: `user-${numericId}` })
+
+    if (existingFiles && existingFiles.length > 0) {
+      await supabase.storage
+        .from('profile-photos')
+        .remove(existingFiles.map(f => f.name))
+    }
+
+    // Update database
+    await supabase
+      .from('users')
+      .update({ photo_url: null })
+      .eq('id', numericId)
+
+    setPhotoPreview(null)
+    setPhotoFile(null)
   }
 
   const handleDeactivate = async () => {
@@ -498,7 +558,8 @@ const handleDelete = async () => {
                   {photoPreview && isEditing && (
                     <button
                       type="button"
-                      onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                      // onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                      onClick={handleRemovePhoto}
                       className="ml-2 text-red-500 hover:text-red-700 text-sm"
                     >
                       Remove
