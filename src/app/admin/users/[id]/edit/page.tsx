@@ -30,6 +30,11 @@ type SpaceTimeslotLimit = {
 }
 
 // const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+const sortDays = (days: string[]) => {
+  return days.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+}
 
 export default function EditUserPage() {
   const { id } = useParams()
@@ -62,12 +67,12 @@ export default function EditUserPage() {
   // Fetch user data
   useEffect(() => {
     const fetchData = async () => {
-      const [userRes, spacesRes, timeSlotsRes, availRes, daysRes] = await Promise.all([
+      const [userRes, spacesRes, timeSlotsRes, availRes ] = await Promise.all([
         supabase.from('users').select('*').eq('id', id).single(),
         supabase.from('spaces').select('*').eq('is_active', true),
         supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
         supabase.from('availability').select('day, time_slot_id').eq('user_id', id),
-        supabase.from('operating_days').select('day').eq('is_active', true).order('id')
+        // supabase.from('operating_days').select('day').eq('is_active', true).order('id')
       ])
 
       if (userRes.data) {
@@ -86,7 +91,7 @@ export default function EditUserPage() {
       }
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
-      if (daysRes.data) setOperatingDays(daysRes.data.map(d => d.day))
+      // if (daysRes.data) setOperatingDays(daysRes.data.map(d => d.day))
       if (availRes.data) {
         setAvailability(availRes.data)
         setOriginalAvailability(availRes.data)
@@ -95,6 +100,22 @@ export default function EditUserPage() {
     }
     fetchData()
   }, [id])
+
+  // Fetch operating days for selected space
+  useEffect(() => {
+    if (!form.space_id) return
+
+    const fetchSpaceDays = async () => {
+      const { data } = await supabase
+        .from('space_operating_days')
+        .select('day')
+        .eq('space_id', parseInt(form.space_id))
+        .order('id')
+      // if (data) setOperatingDays(data.map(d => d.day))
+      if (data) setOperatingDays(sortDays(data.map((d: { day: string }) => d.day)))
+    }
+    fetchSpaceDays()
+  }, [form.space_id])
 
   // Fetch limits when space changes
   useEffect(() => {

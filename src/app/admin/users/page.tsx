@@ -176,7 +176,7 @@ const handleDownloadPng = async () => {
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">ID</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Name</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Grade</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Space</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Component</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Status</th>
                   <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Actions</th>
                 </tr>

@@ -70,19 +70,26 @@ export default function AddUserPage() {
   //   }
   //   fetchData()
   // }, [])
+
+  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+  const sortDays = (days: string[]) => {
+    return days.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+  }
+
   useEffect(() => {
     const fetchData = async () => {
-      const [spacesRes, timeSlotsRes, daysRes] = await Promise.all([
+      const [spacesRes, timeSlotsRes] = await Promise.all([
         supabase.from('spaces').select('*').eq('is_active', true),
         supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
-        supabase.from('operating_days').select('day').eq('is_active', true).order("id")
+        // supabase.from('operating_days').select('day').eq('is_active', true).order("id")
       ])
       if (spacesRes.data) setSpaces(spacesRes.data)
       if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
-      if (daysRes.data) {
-        setOperatingDays(daysRes.data.map(d => d.day))
-        console.log('Operating days fetched:', daysRes.data)
-      }
+      // if (daysRes.data) {
+      //   setOperatingDays(daysRes.data.map(d => d.day))
+      //   console.log('Operating days fetched:', daysRes.data)
+      // }
     }
     fetchData()
   }, [])
@@ -119,6 +126,22 @@ export default function AddUserPage() {
       setLimits(counts)
     }
     fetchLimits()
+  }, [form.space_id])
+
+  // Fetch operating days for selected space
+useEffect(() => {
+    if (!form.space_id) return
+
+    const fetchSpaceDays = async () => {
+      const { data } = await supabase
+        .from('space_operating_days')
+        .select('day')
+        .eq('space_id', parseInt(form.space_id))
+        .order('id')
+      // if (data) setOperatingDays(data.map(d => d.day))
+      if (data) setOperatingDays(sortDays(data.map((d: { day: string }) => d.day)))
+    }
+    fetchSpaceDays()
   }, [form.space_id])
 
   // Auto-assign space based on grade
