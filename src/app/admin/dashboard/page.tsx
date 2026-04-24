@@ -17,8 +17,9 @@ type StatCard = {
 
 type DailyAttendance = {
   day: string
-  Arts: number
-  Computer: number
+  [key: string]: number | string 
+  // Arts: number
+  // Computer: number
 }
 
 type SpaceDistribution = {
@@ -35,7 +36,8 @@ type RecentLog = {
   time_ended: string | null
 }
 
-const COLORS = ['#6366f1', '#f59e0b']
+// const COLORS = ['#6366f1', '#f59e0b']
+const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4']
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
@@ -46,6 +48,7 @@ export default function DashboardPage() {
   const [weeklyData, setWeeklyData] = useState<DailyAttendance[]>([])
   const [spaceData, setSpaceData] = useState<SpaceDistribution[]>([])
   const [recentLogs, setRecentLogs] = useState<RecentLog[]>([])
+  const [spaces, setSpaces] = useState<{ id: number; space_name: string }[]>([])
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -66,6 +69,13 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     setLoading(true)
+
+    const { data: spacesData } = await supabase
+      .from('spaces')
+      .select('id, space_name')
+      .eq('is_active', true)
+
+    if (spacesData) setSpaces(spacesData)
 
     // Total active users
     const { count: usersCount } = await supabase
@@ -94,17 +104,27 @@ export default function DashboardPage() {
     setClockOutToday(completed)
 
     // Space distribution for today
-    const artsCount = todaySessions?.filter(
-      s => (s.spaces as any)?.space_name === 'Arts Space'
-    ).length ?? 0
-    const computerCount = todaySessions?.filter(
-      s => (s.spaces as any)?.space_name === 'Computer Space'
-    ).length ?? 0
+    // const artsCount = todaySessions?.filter(
+    //   s => (s.spaces as any)?.space_name === 'Arts Space'
+    // ).length ?? 0
+    // const computerCount = todaySessions?.filter(
+    //   s => (s.spaces as any)?.space_name === 'Computer Space'
+    // ).length ?? 0
 
-    setSpaceData([
-      { name: 'Arts Space', value: artsCount },
-      { name: 'Computer Space', value: computerCount },
-    ])
+    // setSpaceData([
+    //   { name: 'Arts Space', value: artsCount },
+    //   { name: 'Computer Space', value: computerCount },
+    // ])
+    
+    if (spacesData) {
+      const distribution = spacesData.map(space => ({
+        name: space.space_name,
+        value: todaySessions?.filter(
+          s => (s.spaces as any)?.space_name === space.space_name
+        ).length ?? 0
+      }))
+      setSpaceData(distribution)
+    }
 
     // Weekly attendance data
     const weekDates = getWeekDates()
@@ -120,18 +140,31 @@ export default function DashboardPage() {
           `)
           .eq('date', date)
 
-        const arts = sessions?.filter(
-          s => (s.spaces as any)?.space_name === 'Arts Space'
-        ).length ?? 0
-        const computer = sessions?.filter(
-          s => (s.spaces as any)?.space_name === 'Computer Space'
-        ).length ?? 0
+        // const arts = sessions?.filter(
+        //   s => (s.spaces as any)?.space_name === 'Arts Space'
+        // ).length ?? 0
+        // const computer = sessions?.filter(
+        //   s => (s.spaces as any)?.space_name === 'Computer Space'
+        // ).length ?? 0
 
-        return {
-          day: getDayLabel(date),
-          Arts: arts,
-          Computer: computer,
-        }
+        // return {
+        //   day: getDayLabel(date),
+        //   Arts: arts,
+        //   Computer: computer,
+        // }
+
+        const dayCounts: Record<string, number> = {}
+          spacesData?.forEach(space => {
+            dayCounts[space.space_name] = sessions?.filter(
+              s => (s.spaces as any)?.space_name === space.space_name
+            ).length ?? 0
+          })
+
+          return {
+            day: getDayLabel(date),
+            ...dayCounts
+          }
+
       })
     )
     setWeeklyData(weeklyAttendance)
@@ -258,8 +291,14 @@ export default function DashboardPage() {
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="Arts" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Computer" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  {/* <Bar dataKey="Arts" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Computer" fill="#f59e0b" radius={[4, 4, 0, 0]} /> */}
+                  {spaces.map((space, index) => (
+                  <Bar key={space.id}
+                      dataKey={space.space_name}
+                      fill={COLORS[index % COLORS.length]}
+                      radius={[4, 4, 0, 0]}/>
+                  ))}
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -8,7 +8,7 @@ export default function Home() {
         {/* Organization Name */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-800 mb-2">
-            Create Foundation Ticketing System
+            Create Hub Portal
           </h1>
             
         </div>
@@ -18,7 +18,7 @@ export default function Home() {
           <Link
             href="/admin/login"
             className="bg-[#ff6347] w-fit px-8 items-center justify-center gap-3 text-[#eeeec6] py-4 rounded-4xl hover:bg-[#414141] font-medium text-3xl transition-colors">
-            Admin Panel
+            Admin Login
           </Link>
 
           <Link

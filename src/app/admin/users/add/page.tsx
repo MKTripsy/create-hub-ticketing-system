@@ -158,23 +158,46 @@ useEffect(() => {
   }, [form.grade_level, spaces])
 
   // Toggle availability
+  // const toggleAvailability = (day: string, timeSlotId: number) => {
+  //   const exists = availability.find(
+  //     a => a.day === day && a.time_slot_id === timeSlotId
+  //   )
+
+  //   if (exists) {
+  //     // Remove if already selected
+  //     setAvailability(prev =>
+  //       prev.filter(a => !(a.day === day && a.time_slot_id === timeSlotId))
+  //     )
+  //   } else {
+  //     // Check if timeslot is full
+  //     const limit = limits.find(l => l.time_slot_id === timeSlotId)
+  //     if (limit && limit.current_count >= limit.max_users) {
+  //       alert(`This time slot is full for ${spaces.find(s => s.id === parseInt(form.space_id))?.space_name}!`)
+  //       return
+  //     }
+  //     setAvailability(prev => [...prev, { day, time_slot_id: timeSlotId }])
+  //   }
+  // }
+
   const toggleAvailability = (day: string, timeSlotId: number) => {
     const exists = availability.find(
       a => a.day === day && a.time_slot_id === timeSlotId
     )
 
     if (exists) {
-      // Remove if already selected
+      // Uncheck — remove this slot
       setAvailability(prev =>
         prev.filter(a => !(a.day === day && a.time_slot_id === timeSlotId))
       )
     } else {
-      // Check if timeslot is full
-      const limit = limits.find(l => l.time_slot_id === timeSlotId)
-      if (limit && limit.current_count >= limit.max_users) {
-        alert(`This time slot is full for ${spaces.find(s => s.id === parseInt(form.space_id))?.space_name}!`)
+      // Check if day already has a timeslot assigned
+      const dayAlreadyHasSlot = availability.find(a => a.day === day)
+
+      if (dayAlreadyHasSlot) {
+        alert(`${day} already has a time slot assigned. Please uncheck it first.`)
         return
       }
+
       setAvailability(prev => [...prev, { day, time_slot_id: timeSlotId }])
     }
   }

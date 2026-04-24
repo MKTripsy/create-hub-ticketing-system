@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Home of Hope — Attendance System',
+  title: 'Create Hub Portal',
   description: 'Ticketing Management System',
 }
 

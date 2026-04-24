@@ -150,21 +150,44 @@ export default function EditUserPage() {
     fetchLimits()
   }, [form.space_id, id])
 
+  // const toggleAvailability = (day: string, timeSlotId: number) => {
+  //   const exists = availability.find(
+  //     a => a.day === day && a.time_slot_id === timeSlotId
+  //   )
+
+  //   if (exists) {
+  //     setAvailability(prev =>
+  //       prev.filter(a => !(a.day === day && a.time_slot_id === timeSlotId))
+  //     )
+  //   } else {
+  //     const limit = limits.find(l => l.time_slot_id === timeSlotId)
+  //     if (limit && limit.current_count >= limit.max_users) {
+  //       alert(`This time slot is full!`)
+  //       return
+  //     }
+  //     setAvailability(prev => [...prev, { day, time_slot_id: timeSlotId }])
+  //   }
+  // }
+
   const toggleAvailability = (day: string, timeSlotId: number) => {
     const exists = availability.find(
       a => a.day === day && a.time_slot_id === timeSlotId
     )
 
     if (exists) {
+      // Uncheck — remove this slot
       setAvailability(prev =>
         prev.filter(a => !(a.day === day && a.time_slot_id === timeSlotId))
       )
     } else {
-      const limit = limits.find(l => l.time_slot_id === timeSlotId)
-      if (limit && limit.current_count >= limit.max_users) {
-        alert(`This time slot is full!`)
+      // Check if day already has a timeslot assigned
+      const dayAlreadyHasSlot = availability.find(a => a.day === day)
+
+      if (dayAlreadyHasSlot) {
+        alert(`${day} already has a time slot assigned. Please uncheck it first.`)
         return
       }
+
       setAvailability(prev => [...prev, { day, time_slot_id: timeSlotId }])
     }
   }
