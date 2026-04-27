@@ -72,9 +72,56 @@ export default function TimeSlotSettings() {
     setSaving(false)
   }
 
+  // const handleDelete = async (slot: TimeSlot) => {
+  //   if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
+  //   await supabase.from('time_slots').delete().eq('id', slot.id)
+  //   await fetchSlots()
+  // }
+
   const handleDelete = async (slot: TimeSlot) => {
     if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
-    await supabase.from('time_slots').delete().eq('id', slot.id)
+
+    console.log('Deleting slot:', slot.id) // ← add
+
+    // Step 1 — Delete from space_timeslot_limits
+    const { error: limitsError } = await supabase
+      .from('space_timeslot_limits')
+      .delete()
+      .eq('time_slot_id', slot.id)
+
+    console.log('Limits delete error:', limitsError) // ← add
+
+    if (limitsError) {
+      alert('Something went wrong at limits. Please try again.')
+      return
+    }
+
+    // Step 2 — Delete from availability
+    const { error: availError } = await supabase
+      .from('availability')
+      .delete()
+      .eq('time_slot_id', slot.id)
+
+    console.log('Availability delete error:', availError) // ← add
+
+    if (availError) {
+      alert('Something went wrong at availability. Please try again.')
+      return
+    }
+
+    // Step 3 — Delete the time slot
+    const { error: slotError } = await supabase
+      .from('time_slots')
+      .delete()
+      .eq('id', slot.id)
+
+    console.log('Slot delete error:', slotError) // ← add
+
+    if (slotError) {
+      alert('Something went wrong at slot. Please try again.')
+      return
+    }
+
     await fetchSlots()
   }
 

@@ -17,6 +17,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/admin/dashboard', label: 'Dashboard'},
+    { href: '/admin/schedules', label: 'Schedules'},
     { href: '/admin/users', label: 'Users'},
     { href: '/admin/attendance', label: 'Attendance'},
     { href: '/scan', label: 'Scan'},
