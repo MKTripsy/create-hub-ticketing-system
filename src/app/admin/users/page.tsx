@@ -161,7 +161,7 @@ const handleDownloadPng = async () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Users: {users.length}</h1>
           <a href="/admin/users/add"
-           className="bg-[#cee4B8] text-black px-4 py-2 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium"> Add User</a>
+           className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg font-medium"> Add User</a>
         </div>
 
         {/* Empty state */}

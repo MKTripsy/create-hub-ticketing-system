@@ -150,7 +150,7 @@ export default function SchedulesPage() {
                 onClick={() => setActiveSpace(space.id)}
                 className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeSpace === space.id
-                    ? 'border-blue-600 text-blue-600'
+                    ? 'border-[#FF6347] text-[#FF6347]'
                     : 'border-transparent text-gray-400 hover:text-gray-600'
                 }`}
               >
@@ -160,12 +160,12 @@ export default function SchedulesPage() {
           </div>
 
           {/* Day Filter */}
-          <div className="flex gap-2 mb-6 flex-wrap">
+          {/* <div className="flex gap-2 mb-6 flex-wrap">
             <button
               onClick={() => setSelectedDay('All')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedDay === 'All'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#FF6347] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -177,14 +177,14 @@ export default function SchedulesPage() {
                 onClick={() => setSelectedDay(day)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedDay === day
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[#FF6347] text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {day}
               </button>
             ))}
-          </div>
+          </div> */}
 
           {/* Schedule Grid */}
           {loading ? (
@@ -234,12 +234,12 @@ export default function SchedulesPage() {
                                   {users.map(user => (
                                     <div
                                       key={user.user_id}
-                                      className="bg-blue-50 rounded px-2 py-1"
+                                      className="bg-[#FF6347] rounded px-2 py-1"
                                     >
-                                      <p className="text-xs font-medium text-blue-800">
+                                      <p className="text-xs font-medium text-[#FAF2F0]">
                                         {user.first_name} {user.last_name}
                                       </p>
-                                      <p className="text-xs text-blue-400">
+                                      <p className="text-xs text-[#FAF2F0]">
                                         {user.custom_id}
                                       </p>
                                     </div>

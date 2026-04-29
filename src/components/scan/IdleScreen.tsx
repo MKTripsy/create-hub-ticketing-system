@@ -35,7 +35,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
             onClick={() => setActiveTab('qr')}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'qr'
-                ? 'border-[#76bcad] text-[#76bcad]'
+                ? 'border-[#FF6347] text-[#FF6347]'
                 : 'border-transparent text-gray-600 hover:text-black'
             }`}
           >
@@ -45,7 +45,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
             onClick={() => setActiveTab('manual')}
             className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'manual'
-                ? 'border-[#76bcad] text-[#76bcad]'
+                ? 'border-[#FF6347] text-[#FF6347]'
                 : 'border-transparent text-gray-600 hover:text-black'
             }`}
           >
@@ -57,7 +57,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
         {activeTab === 'qr' && (
           <button
             onClick={onStartScan}
-            className="w-full bg-[#cee4b8] text-black py-3 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium text-lg"
+            className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-3 rounded-lg font-medium text-lg"
           >
             Start Scanning
           </button>
@@ -75,12 +75,12 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
               onChange={e => setManualId(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="e.g. HOH-26-XXXX"
-              className="w-full border border-[#cee4b8] rounded-lg px-3 py-2 text-black mb-4 focus:outline-none focus:ring-2 focus:ring-[#cee4b8]"
+              className="w-full border border-gray-400 rounded-lg px-3 py-2 text-black mb-4 focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
             <button
               onClick={handleSearch}
               disabled={loading || !manualId.trim()}
-              className="w-full bg-[#cee4b8] text-black py-2 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium "
+              className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-2 rounded-lg font-medium "
             >
               {loading ? 'Searching...' : 'Search User'}
             </button>

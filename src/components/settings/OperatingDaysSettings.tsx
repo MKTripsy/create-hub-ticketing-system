@@ -64,7 +64,7 @@ export default function OperatingDaysSettings() {
               type="checkbox"
               checked={day.is_active}
               onChange={() => handleToggle(day.id)}
-              className="w-4 h-4 accent-[#CEE4B8]"
+              className="w-4 h-4 accent-[#FF6347]"
             />
             <span className="text-sm font-medium text-gray-700">{day.day}</span>
           </label>
@@ -74,7 +74,7 @@ export default function OperatingDaysSettings() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-[#CEE4B8] text-black py-2 rounded-lg hover:bg-[#414141] hover:text-white font-medium disabled:opacity-50"
+        className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-2 rounded-lg font-medium disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Save Changes'}
       </button>

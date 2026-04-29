@@ -98,9 +98,9 @@ export default function SurveyOptionSettings() {
         <h2 className="text-lg font-semibold text-gray-800">Survey Options</h2>
         <button
           onClick={openAdd}
-          className="bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white px-4 py-2 rounded-lg text-sm font-medium"
+          className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg text-sm font-medium"
         >
-          + Add Option
+          Add Option
         </button>
       </div>
 
@@ -112,7 +112,7 @@ export default function SurveyOptionSettings() {
             onClick={() => setSelectedSpace(space.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedSpace === space.id
-                ? 'bg-[#CEE4B8] text-black'
+                ? 'bg-[#FF6347] text-[#FAF2F0]'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -128,13 +128,13 @@ export default function SurveyOptionSettings() {
           {options.map(option => (
             <div key={option.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-1 rounded-full ${
+                {/* <span className={`text-xs px-2 py-1 rounded-full ${
                   option.is_active
                     ? 'bg-green-100 text-green-700'
                     : 'bg-red-100 text-red-700'
                 }`}>
                   {option.is_active ? 'Active' : 'Inactive'}
-                </span>
+                </span> */}
                 <span className="text-sm text-gray-800">{option.label}</span>
               </div>
               <div className="flex gap-3">

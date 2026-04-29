@@ -167,7 +167,7 @@ export default function SpaceSettings() {
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Age Group</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Grade Range</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Operating Days</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+            {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th> */}
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
         </thead>
@@ -343,7 +343,7 @@ function SpaceRow({
           : <span className="text-gray-300">None</span>
         }
       </td>
-      <td className="px-4 py-3">
+      {/* <td className="px-4 py-3">
         <span className={`text-xs px-2 py-1 rounded-full font-medium ${
           space.is_active
             ? 'bg-green-100 text-green-700'
@@ -351,7 +351,7 @@ function SpaceRow({
         }`}>
           {space.is_active ? 'Active' : 'Inactive'}
         </span>
-      </td>
+      </td> */}
       <td className="px-4 py-3 flex gap-3">
         <button
           onClick={() => onEdit(space)}
