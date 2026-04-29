@@ -15,9 +15,9 @@ export default function SettingsPage() {
 
   const tabs: { id: Tab; label: string }[] = [
   { id: 'timeslots', label: 'Time Slots' },
-  { id: 'survey', label: 'Surveys' },
-  { id: 'spaces', label: 'Components' },
   { id: 'days', label: 'Operating Days' },
+  { id: 'spaces', label: 'Components' },
+  { id: 'survey', label: 'Survey' },
   { id: 'account', label: 'Account' },
 ]
 
