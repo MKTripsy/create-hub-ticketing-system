@@ -5,17 +5,15 @@ import AdminGuard from '@/components/AdminGuard'
 import TimeSlotSettings from '@/components/settings/TimeSlotSettings'
 import SurveyOptionSettings from '@/components/settings/SurveyOptionSettings'
 import SpaceSettings from '@/components/settings/SpaceSettings'
-import OperatingDaysSettings from '@/components/settings/OperatingDaysSettings'
 import AdminAccountSettings from '@/components/settings/AdminAccountSettings'
 
-type Tab = 'timeslots' | 'survey' | 'spaces' | 'days' | 'account'
+type Tab = 'timeslots' | 'survey' | 'spaces' | 'account'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('timeslots')
 
   const tabs: { id: Tab; label: string }[] = [
   { id: 'timeslots', label: 'Time Slots' },
-  { id: 'days', label: 'Operating Days' },
   { id: 'spaces', label: 'Components' },
   { id: 'survey', label: 'Survey' },
   { id: 'account', label: 'Account' },
@@ -49,7 +47,6 @@ export default function SettingsPage() {
           {/* Tab Content */}
           <div className="bg-white rounded-xl shadow p-6">
             {activeTab === 'timeslots' && <TimeSlotSettings />}
-            {activeTab === 'days' && <OperatingDaysSettings />}
             {activeTab === 'spaces' && <SpaceSettings />}
             {activeTab === 'survey' && <SurveyOptionSettings />}
             {activeTab === 'account' && <AdminAccountSettings />}
