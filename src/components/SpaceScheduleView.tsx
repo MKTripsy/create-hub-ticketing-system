@@ -105,7 +105,7 @@ export default function SpaceScheduleView({ spaceId, operatingDays, excludeUserI
         className="flex items-center justify-between w-full text-left"
       >
         <h3 className="text-sm font-semibold text-gray-600">
-          Current Space Schedule
+          Current Component Schedule
         </h3>
         <span className="text-gray-400 text-sm">
           {isOpen ? '▲ Hide' : '▼ Show'}

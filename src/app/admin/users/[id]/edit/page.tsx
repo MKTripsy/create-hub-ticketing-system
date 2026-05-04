@@ -528,7 +528,7 @@ export default function EditUserPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Space Assignment</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Component Assignment</label>
                 <div className="flex gap-4">
                   {spaces.map(space => (
                     <label

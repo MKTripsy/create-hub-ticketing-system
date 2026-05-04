@@ -498,7 +498,7 @@ export default function AddUserPage() {
                 {/* Space Assignment */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Space Assignment <span className="text-red-500">*</span>
+                    Component Assignment <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-4">
                     {spaces.map(space => (
