@@ -13,14 +13,14 @@ export default function NotAvailableScreen({ user, onReset }: Props) {
         <h2 className="text-2xl font-bold text-orange-600 mb-2">
           Not Your Time Yet!
         </h2>
-        <p className="text-gray-500 mb-2">Hi {user?.first_name}! 👋</p>
+        <p className="text-gray-500 mb-2">Hi {user?.first_name}!</p>
         <p className="text-gray-500 mb-6">
           You are not scheduled to use the computer right now.
           Please ask a staff member for help.
         </p>
         <button
           onClick={onReset}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
+          className="w-full bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium transition-colors"
         >
           Go Back
         </button>

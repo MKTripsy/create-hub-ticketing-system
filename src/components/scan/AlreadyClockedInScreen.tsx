@@ -52,7 +52,7 @@ export default function AlreadyClockedInScreen({
                   onClick={() => onSelectOption(option.id)}
                   className={`w-full text-left text-black px-4 py-2 rounded-lg border transition-colors ${
                     selectedOption === option.id
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      ? 'bg-[#FF6347] border-[#FF6347] text-white'
                       : 'border-gray-200 hover:bg-gray-50'
                   }`}
                 >
@@ -66,7 +66,7 @@ export default function AlreadyClockedInScreen({
         <div className="flex gap-3">
           <button
             onClick={onClockOut}
-            className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 font-medium"
+            className="flex-1 bg-[#FF6347] text-[#FAF2F0] py-2 rounded-lg hover:bg-[#414141] font-medium transition-colors"
           >
             Clock Out
           </button>

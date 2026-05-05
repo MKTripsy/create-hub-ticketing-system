@@ -262,7 +262,7 @@ export default function SchedulesPage() {
                 <div className="p-12 text-center">
                   <p className="text-gray-400 text-lg mb-2">No schedules found</p>
                   <p className="text-gray-300 text-sm">
-                    No users are assigned to this space yet
+                    No users are assigned to this component yet
                   </p>
                 </div>
               )}

@@ -21,7 +21,7 @@ export default function ClockedOutScreen({ user }: Props) {
             👤
           </div>
         )}
-        <h2 className="text-3xl font-bold text-blue-600 mb-2">Clocked Out!</h2>
+        <h2 className="text-3xl font-bold text-[#FF6347] mb-2">Clocked Out!</h2>
         <p className="text-gray-500 mb-6">
           {user?.first_name} {user?.last_name}
         </p>

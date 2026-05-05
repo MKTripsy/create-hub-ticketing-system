@@ -57,7 +57,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
         {activeTab === 'qr' && (
           <button
             onClick={onStartScan}
-            className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-3 rounded-lg font-medium text-lg"
+            className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-3 rounded-lg font-medium text-lg transition-colors"
           >
             Start Scanning
           </button>
@@ -80,7 +80,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
             <button
               onClick={handleSearch}
               disabled={loading || !manualId.trim()}
-              className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-2 rounded-lg font-medium "
+              className="w-full bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] py-2 rounded-lg font-medium transition-colors"
             >
               {loading ? 'Searching...' : 'Search User'}
             </button>

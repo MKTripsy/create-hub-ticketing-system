@@ -44,7 +44,7 @@ export default function PreSurveyScreen({
                   onClick={() => onSelectOption(option.id)}
                   className={`w-full text-left text-black px-4 py-2 rounded-lg border transition-colors ${
                     selectedOption === option.id
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      ? 'bg-[#FF6347] border-[#FF6347] text-white'
                       : 'border-gray-200 hover:bg-gray-50'
                   }`}
                 >
@@ -58,9 +58,9 @@ export default function PreSurveyScreen({
         <div className="flex gap-3">
           <button
             onClick={onClockIn}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
+            className="flex-1 bg-[#76BCAD] text-[#FAF2F0] py-2 rounded-lg hover:bg-[#414141] font-medium transition-colors"
           >
-            ✅ Clock In
+             Clock In
           </button>
           <button
             onClick={onCancel}
