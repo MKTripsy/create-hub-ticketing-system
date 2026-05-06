@@ -284,7 +284,8 @@ export default function EditUserPage() {
       .from('profile-photos')
       .getPublicUrl(fileName)
 
-    return data.publicUrl
+    // return data.publicUrl
+     return `${data.publicUrl}?t=${Date.now()}` //profile picture change bug fix
   }
 
   const handleRemovePhoto = async () => {

@@ -48,6 +48,81 @@ export default function AttendanceLogsPage() {
     time_ended: '',
   })
   const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState({
+    user_id: '',
+    space_id: '',
+    date: '',
+    time_started: '',
+    time_ended: '',
+  })
+
+  const handleEditStart = (log: AttendanceLog) => {
+    setEditingId(log.id)
+    setEditForm({
+      user_id: users.find(u => 
+        u.first_name === log.users?.first_name && 
+        u.last_name === log.users?.last_name
+      )?.id.toString() || '',
+      space_id: spaces.find(s => 
+        s.space_name === log.spaces?.space_name
+      )?.id.toString() || '',
+      date: log.date,
+      time_started: new Date(log.time_started)
+        .toLocaleTimeString('en-PH', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Manila'
+        }),
+      time_ended: log.time_ended 
+        ? new Date(log.time_ended).toLocaleTimeString('en-PH', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Manila'
+          })
+        : '',
+    })
+  }
+
+  const handleEditSave = async (id: number) => {
+    if (!editForm.user_id || !editForm.space_id || !editForm.date || !editForm.time_started) {
+      alert('Please fill in all required fields.')
+      return
+    }
+
+    try {
+      const timeStarted = `${editForm.date}T${editForm.time_started}`
+      const timeEnded = editForm.time_ended
+        ? `${editForm.date}T${editForm.time_ended}`
+        : null
+
+      const { error } = await supabase
+        .from('attendance_session')
+        .update({
+          user_id: parseInt(editForm.user_id),
+          accessed_space: parseInt(editForm.space_id),
+          date: editForm.date,
+          time_started: timeStarted,
+          time_ended: timeEnded,
+        })
+        .eq('id', id)
+
+      if (error) throw error
+
+      setEditingId(null)
+      fetchLogs()
+
+    } catch (error) {
+      console.error('Edit error:', error)
+      alert('Something went wrong. Please try again.')
+    }
+  }
+
+  const handleEditCancel = () => {
+    setEditingId(null)
+  }
 
   const fetchLogs = async () => {
     setLoading(true)
@@ -363,6 +438,161 @@ export default function AttendanceLogsPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {filteredLogs.map(log => (
+                      <tr key={log.id} className={`hover:bg-gray-50 ${editingId === log.id ? 'bg-blue-50' : ''}`}>
+
+                        {editingId === log.id ? (
+                          // ── EDIT MODE ──────────────────────────────
+                          <>
+                            {/* User */}
+                            <td className="px-4 py-2" colSpan={1}>
+                              <select
+                                value={editForm.user_id}
+                                onChange={e => setEditForm({ ...editForm, user_id: e.target.value })}
+                                className="w-full border border-[#FF6347] rounded px-2 py-1 text-xs text-black focus:outline-none focus:ring-1 focus:ring-[#FF6347]"
+                              >
+                                <option value="">Select user</option>
+                                {users.map(user => (
+                                  <option key={user.id} value={user.id}>
+                                    {user.first_name} {user.last_name}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+
+                            {/* ID — not editable, just show */}
+                            <td className="px-4 py-2 text-xs text-gray-400">
+                              {log.users?.custom_id}
+                            </td>
+
+                            {/* Space */}
+                            <td className="px-4 py-2">
+                              <select
+                                value={editForm.space_id}
+                                onChange={e => setEditForm({ ...editForm, space_id: e.target.value })}
+                                className="w-full border border-[#FF6347] rounded px-2 py-1 text-xs text-black focus:outline-none focus:ring-1 focus:ring-[#FF6347]"
+                              >
+                                <option value="">Select space</option>
+                                {spaces.map(space => (
+                                  <option key={space.id} value={space.id}>
+                                    {space.space_name}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+
+                            {/* Date */}
+                            <td className="px-4 py-2">
+                              <input
+                                type="date"
+                                value={editForm.date}
+                                onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                                className="w-full border border-[#FF6347] rounded px-2 py-1 text-xs text-black focus:outline-none focus:ring-1 focus:ring-[#FF6347]"
+                              />
+                            </td>
+
+                            {/* Time In */}
+                            <td className="px-4 py-2">
+                              <input
+                                type="time"
+                                value={editForm.time_started}
+                                onChange={e => setEditForm({ ...editForm, time_started: e.target.value })}
+                                className="w-full border border-[#FF6347] rounded px-2 py-1 text-xs text-black focus:outline-none focus:ring-1 focus:ring-[#FF6347]"
+                              />
+                            </td>
+
+                            {/* Time Out */}
+                            <td className="px-4 py-2">
+                              <input
+                                type="time"
+                                value={editForm.time_ended}
+                                onChange={e => setEditForm({ ...editForm, time_ended: e.target.value })}
+                                className="w-full border border-[#FF6347] rounded px-2 py-1 text-xs text-black focus:outline-none focus:ring-1 focus:ring-[#FF6347]"
+                              />
+                            </td>
+
+                            {/* Duration — not editable */}
+                            <td className="px-4 py-2 text-xs text-gray-400">—</td>
+
+                            {/* Pre Survey — not editable */}
+                            <td className="px-4 py-2 text-xs text-gray-400">—</td>
+
+                            {/* Post Survey — not editable */}
+                            <td className="px-4 py-2 text-xs text-gray-400">—</td>
+
+                            {/* Actions */}
+                            <td className="px-4 py-2">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditSave(log.id)}
+                                  className="text-green-600 hover:text-green-800 text-xs font-medium"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={handleEditCancel}
+                                  className="text-gray-400 hover:text-gray-600 text-xs font-medium"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          // ── VIEW MODE ──────────────────────────────
+                          <>
+                            <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                              {log.users?.first_name} {log.users?.last_name}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500">
+                              {log.users?.custom_id}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {log.spaces?.space_name}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {log.date}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {formatTime(log.time_started)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {log.time_ended
+                                ? formatTime(log.time_ended)
+                                : <span className="text-green-600 font-medium">Active</span>
+                              }
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {formatDuration(log.time_started, log.time_ended)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {log.pre_survey || <span className="text-gray-300">—</span>}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {log.post_survey || <span className="text-gray-300">—</span>}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => handleEditStart(log)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(log.id)}
+                                  className="text-red-500 hover:text-red-700 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                  {/* <tbody className="divide-y divide-gray-100">
+                    {filteredLogs.map(log => (
                       <tr key={log.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm font-medium text-gray-800">
                           {log.users?.first_name} {log.users?.last_name}
@@ -404,7 +634,7 @@ export default function AttendanceLogsPage() {
                         </td>
                       </tr>
                     ))}
-                  </tbody>
+                  </tbody> */}
                 </table>
               </div>
 
