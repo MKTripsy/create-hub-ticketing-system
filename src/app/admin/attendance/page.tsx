@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import AdminGuard from '@/components/AdminGuard'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 type AttendanceLog = {
   id: number
@@ -56,6 +58,9 @@ export default function AttendanceLogsPage() {
     time_started: '',
     time_ended: '',
   })
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [exportScope, setExportScope] = useState<'filtered' | 'all'>('filtered')
+  const [exporting, setExporting] = useState(false)
 
   const handleEditStart = (log: AttendanceLog) => {
     setEditingId(log.id)
@@ -317,6 +322,133 @@ export default function AttendanceLogsPage() {
     return `${mins}m`
   }
 
+  const getExportData = async (scope: 'filtered' | 'all') => {
+    if (scope === 'filtered') {
+      return filteredLogs
+    }
+
+    // Fetch all records
+    const { data, error } = await supabase
+      .from('attendance_session')
+      .select(`
+        id,
+        date,
+        time_started,
+        time_ended,
+        users (
+          first_name,
+          last_name,
+          custom_id,
+          grade_level
+        ),
+        spaces:accessed_space (
+          space_name
+        )
+      `)
+      .order('time_started', { ascending: false })
+
+    if (error || !data) return []
+
+    const logsWithSurveys = await Promise.all(
+      data.map(async (log) => {
+        const { data: surveys } = await supabase
+          .from('survey_responses')
+          .select(`type, survey_options ( label )`)
+          .eq('session_id', log.id)
+
+        const preSurvey = surveys?.find(s => s.type === 'pre')
+        const postSurvey = surveys?.find(s => s.type === 'post')
+
+        return {
+          ...log,
+          pre_survey: (preSurvey?.survey_options as any)?.label || null,
+          post_survey: (postSurvey?.survey_options as any)?.label || null,
+        }
+      })
+    )
+    return logsWithSurveys as unknown as AttendanceLog[]
+  }
+
+  const exportCSV = async (scope: 'filtered' | 'all') => {
+    setExporting(true)
+    const data = await getExportData(scope)
+
+    const headers = [
+      'Name', 'ID', 'Component', 'Date',
+      'Clock In', 'Clock Out', 'Duration',
+      'Pre Survey', 'Post Survey'
+    ]
+
+    const rows = data.map(log => [
+      `${log.users?.first_name} ${log.users?.last_name}`,
+      log.users?.custom_id || '',
+      log.spaces?.space_name || '',
+      log.date,
+      formatTime(log.time_started),
+      log.time_ended ? formatTime(log.time_ended) : 'Active',
+      formatDuration(log.time_started, log.time_ended),
+      log.pre_survey || '—',
+      log.post_survey || '—',
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `attendance-${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+    setExporting(false)
+    setShowExportModal(false)
+  }
+
+  const exportPDF = async (scope: 'filtered' | 'all') => {
+    setExporting(true)
+    const data = await getExportData(scope)
+
+    const doc = new jsPDF({ orientation: 'landscape' })
+
+    // Title
+    doc.setFontSize(16)
+    doc.text('Attendance Report', 14, 15)
+    doc.setFontSize(10)
+    doc.text(
+      `Generated: ${new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}`,
+      14, 22
+    )
+
+    // Table
+    autoTable(doc, {
+      startY: 28,
+      head: [[
+        'Name', 'ID', 'Component', 'Date',
+        'Clock In', 'Clock Out', 'Duration',
+        'Pre Survey', 'Post Survey'
+      ]],
+      body: data.map(log => [
+        `${log.users?.first_name} ${log.users?.last_name}`,
+        log.users?.custom_id || '',
+        log.spaces?.space_name || '',
+        log.date,
+        formatTime(log.time_started),
+        log.time_ended ? formatTime(log.time_ended) : 'Active',
+        formatDuration(log.time_started, log.time_ended),
+        log.pre_survey || '—',
+        log.post_survey || '—',
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [99, 102, 241] },
+    })
+
+    doc.save(`attendance-${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })}.pdf`)
+    setExporting(false)
+    setShowExportModal(false)
+  }
+
   return (
     <AdminGuard>
       <div className="min-h-screen p-8">
@@ -327,14 +459,20 @@ export default function AttendanceLogsPage() {
             <h1 className="text-2xl font-bold text-gray-800">Attendance Logs</h1>
             <div className="flex gap-3">
               <button
+                onClick={() => setShowExportModal(true)}
+                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
+              >
+                Export
+              </button>
+              <button
                 onClick={() => setShowManualModal(true)}
-                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium"
+                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
               >
                  Manual Entry
               </button>
               <button
                 onClick={fetchLogs}
-                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm"
+                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm transition-colors"
               >
                  Refresh
               </button>
@@ -354,7 +492,7 @@ export default function AttendanceLogsPage() {
                 value={searchName}
                 onChange={e => setSearchName(e.target.value)}
                 placeholder="e.g. Juan"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               />
             </div>
 
@@ -367,7 +505,7 @@ export default function AttendanceLogsPage() {
                 type="date"
                 value={filterDate}
                 onChange={e => setFilterDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               />
             </div>
 
@@ -379,7 +517,7 @@ export default function AttendanceLogsPage() {
               <select
                 value={filterSpace}
                 onChange={e => setFilterSpace(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               >
                 <option value="">All Components</option>
                 {spaces.map(space => (
@@ -591,50 +729,6 @@ export default function AttendanceLogsPage() {
                       </tr>
                     ))}
                   </tbody>
-                  {/* <tbody className="divide-y divide-gray-100">
-                    {filteredLogs.map(log => (
-                      <tr key={log.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                          {log.users?.first_name} {log.users?.last_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {log.users?.custom_id}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.spaces?.space_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.date}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {formatTime(log.time_started)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.time_ended
-                            ? formatTime(log.time_ended)
-                            : <span className="text-green-600 font-medium">Active</span>
-                          }
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {formatDuration(log.time_started, log.time_ended)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.pre_survey || <span className="text-gray-300">—</span>}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {log.post_survey || <span className="text-gray-300">—</span>}
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() => handleDelete(log.id)}
-                            className="text-red-500 hover:text-red-700 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody> */}
                 </table>
               </div>
 
@@ -751,6 +845,88 @@ export default function AttendanceLogsPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-[#FAF2F0] bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Export Attendance
+            </h3>
+
+            {/* Scope selection */}
+            <div className="mb-6">
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                What to export:
+              </p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="all"
+                    checked={exportScope === 'all'}
+                    onChange={() => setExportScope('all')}
+                    className="w-4 h-4 accent-[#FF6347]"
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-black">
+                      All records
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Export entire attendance history
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    value="filtered"
+                    checked={exportScope === 'filtered'}
+                    onChange={() => setExportScope('filtered')}
+                    className="w-4 h-4 accent-[#FF6347]"
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-gray-800">
+                      Current Filters
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Export only the records shown with current filters
+                      ({filteredLogs.length} records)
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Format buttons */}
+            <p className="text-sm font-medium text-gray-700 mb-3">
+              Export format:
+            </p>
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => exportCSV(exportScope)}
+                disabled={exporting}
+                className="flex-1 bg-[#CEE4B8] text-black py-2 rounded-lg hover:bg-[#414141] hover:text-white font-medium disabled:opacity-50 text-sm transition-colors"
+              >
+                {exporting ? 'Exporting...' : ' CSV'}
+              </button>
+              <button
+                onClick={() => exportPDF(exportScope)}
+                disabled={exporting}
+                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 text-sm transition-colors"
+              >
+                {exporting ? 'Exporting...' : ' PDF'}
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowExportModal(false)}
+              className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 text-sm"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
