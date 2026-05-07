@@ -196,6 +196,7 @@ export default function EditUserPage() {
     setSaving(true)
 
     try {
+      // Update user info
       const { error: userError } = await supabase
         .from('users')
         .update({
@@ -209,8 +210,32 @@ export default function EditUserPage() {
 
       if (userError) throw userError
 
-      await supabase.from('availability').delete().eq('user_id', numericId)
+      // Nullify availability_id on sessions first
+      const { data: userAvailIds } = await supabase
+        .from('availability')
+        .select('id')
+        .eq('user_id', numericId)
 
+      if (userAvailIds && userAvailIds.length > 0) {
+        const ids = userAvailIds.map(a => a.id)
+        await supabase
+          .from('attendance_session')
+          .update({ availability_id: null })
+          .in('availability_id', ids)
+      }
+
+      // Delete old availability
+      const { error: deleteError } = await supabase
+        .from('availability')
+        .delete()
+        .eq('user_id', numericId)
+
+      if (deleteError) throw deleteError
+
+      // Delay to ensure delete commits
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Insert new availability
       if (availability.length > 0) {
         const availabilityRows = availability.map(a => ({
           user_id: numericId,
@@ -226,6 +251,7 @@ export default function EditUserPage() {
         if (availError) throw availError
       }
 
+      // Upload photo if changed
       if (photoFile) {
         const photoUrl = await uploadPhoto(numericId)
         if (photoUrl) {
