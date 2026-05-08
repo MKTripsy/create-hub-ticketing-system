@@ -66,13 +66,12 @@ export default function EditUserPage() {
     is_active: true,
   })
 
-  // Fetch user data
+  // Fetch user data — remove time_slots from here
   useEffect(() => {
     const fetchData = async () => {
-      const [userRes, spacesRes, timeSlotsRes, availRes] = await Promise.all([
+      const [userRes, spacesRes, availRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', numericId).single(),
         supabase.from('spaces').select('*').eq('is_active', true),
-        supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
         supabase.from('availability').select('day, time_slot_id').eq('user_id', numericId),
       ])
 
@@ -91,7 +90,6 @@ export default function EditUserPage() {
         }
       }
       if (spacesRes.data) setSpaces(spacesRes.data)
-      if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
       if (availRes.data) {
         setAvailability(availRes.data)
         setOriginalAvailability(availRes.data)
@@ -101,21 +99,32 @@ export default function EditUserPage() {
     fetchData()
   }, [numericId])
 
-  // Fetch operating days for selected space
+  // Fetch operating days AND time slots for selected space
   useEffect(() => {
     if (!form.space_id) return
-    const fetchSpaceDays = async () => {
-      const { data } = await supabase
-        .from('space_operating_days')
-        .select('day')
-        .eq('space_id', parseInt(form.space_id))
-        .order('id')
-      if (data) setOperatingDays(sortDays(data.map((d: { day: string }) => d.day)))
+
+    const fetchSpaceData = async () => {
+      const [daysRes, slotsRes] = await Promise.all([
+        supabase
+          .from('space_operating_days')
+          .select('day')
+          .eq('space_id', parseInt(form.space_id))
+          .order('id'),
+        supabase
+          .from('time_slots')
+          .select('*')
+          .eq('is_active', true)
+          .eq('space_id', parseInt(form.space_id))
+          .order('start_time')
+      ])
+
+      if (daysRes.data) setOperatingDays(sortDays(daysRes.data.map((d: { day: string }) => d.day)))
+      if (slotsRes.data) setTimeSlots(slotsRes.data)
     }
-    fetchSpaceDays()
+    fetchSpaceData()
   }, [form.space_id])
 
-  // Fetch limits when space changes
+  // Fetch limits when space changes — keep this exactly as is
   useEffect(() => {
     if (!form.space_id) return
 
@@ -155,6 +164,97 @@ export default function EditUserPage() {
     }
     fetchLimits()
   }, [form.space_id, numericId])
+
+  // //Fetch user data
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const [userRes, spacesRes, timeSlotsRes, availRes] = await Promise.all([
+  //       supabase.from('users').select('*').eq('id', numericId).single(),
+  //       supabase.from('spaces').select('*').eq('is_active', true),
+  //       // supabase.from('time_slots').select('*').eq('is_active', true).order('start_time'),
+  //       supabase.from('time_slots').select('*').eq('is_active', true).eq('space_id', YOUR_SPACE_ID).order('start_time')
+  //       supabase.from('availability').select('day, time_slot_id').eq('user_id', numericId),
+  //     ])
+
+  //     if (userRes.data) {
+  //       setForm({
+  //         first_name: userRes.data.first_name,
+  //         last_name: userRes.data.last_name,
+  //         birthdate: userRes.data.birthdate,
+  //         grade_level: userRes.data.grade_level,
+  //         space_id: userRes.data.space_id.toString(),
+  //         qr_code: userRes.data.qr_code,
+  //         is_active: userRes.data.is_active,
+  //       })
+  //       if (userRes.data.photo_url) {
+  //         setPhotoPreview(userRes.data.photo_url)
+  //       }
+  //     }
+  //     if (spacesRes.data) setSpaces(spacesRes.data)
+  //     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
+  //     if (availRes.data) {
+  //       setAvailability(availRes.data)
+  //       setOriginalAvailability(availRes.data)
+  //     }
+  //     setLoading(false)
+  //   }
+  //   fetchData()
+  // }, [numericId])
+
+  // // Fetch operating days for selected space
+  // useEffect(() => {
+  //   if (!form.space_id) return
+  //   const fetchSpaceDays = async () => {
+  //     const { data } = await supabase
+  //       .from('space_operating_days')
+  //       .select('day')
+  //       .eq('space_id', parseInt(form.space_id))
+  //       .order('id')
+  //     if (data) setOperatingDays(sortDays(data.map((d: { day: string }) => d.day)))
+  //   }
+  //   fetchSpaceDays()
+  // }, [form.space_id])
+
+  // // Fetch limits when space changes
+  // useEffect(() => {
+  //   if (!form.space_id) return
+
+  //   const fetchLimits = async () => {
+  //     const { data: limitsData } = await supabase
+  //       .from('space_timeslot_limits')
+  //       .select('time_slot_id, max_users')
+  //       .eq('space_id', parseInt(form.space_id))
+
+  //     if (!limitsData) return
+
+  //     const counts = await Promise.all(
+  //       limitsData.map(async (limit) => {
+  //         const { data: rows } = await supabase
+  //           .from('availability')
+  //           .select('user_id, day')
+  //           .eq('time_slot_id', limit.time_slot_id)
+  //           .eq('space_id', parseInt(form.space_id))
+  //           .neq('user_id', numericId)
+
+  //         const dayCountsMap: Record<string, number> = {}
+  //         if (rows) {
+  //           rows.forEach((row: { user_id: number; day: string }) => {
+  //             if (!dayCountsMap[row.day]) dayCountsMap[row.day] = 0
+  //             dayCountsMap[row.day]++
+  //           })
+  //         }
+
+  //         return {
+  //           time_slot_id: limit.time_slot_id,
+  //           max_users: limit.max_users,
+  //           day_counts: dayCountsMap
+  //         }
+  //       })
+  //     )
+  //     setLimits(counts)
+  //   }
+  //   fetchLimits()
+  // }, [form.space_id, numericId])
 
   const toggleAvailability = (day: string, timeSlotId: number) => {
     const exists = availability.find(

@@ -25,12 +25,25 @@ export default function ScanPage() {
   const [currentTimeSlot, setCurrentTimeSlot] = useState<TimeSlot | null>(null)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
-  const getCurrentTimeSlot = async (): Promise<TimeSlot | null> => {
+  // const getCurrentTimeSlot = async (): Promise<TimeSlot | null> => {
+  //   const now = new Date()
+  //   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  //   const { data } = await supabase
+  //     .from('time_slots')
+  //     .select('*')
+  //     .lte('start_time', currentTime)
+  //     .gte('end_time', currentTime)
+  //     .eq('is_active', true)
+  //     .single()
+  //   return data || null
+  // }
+  const getCurrentTimeSlot = async (spaceId: number): Promise<TimeSlot | null> => {
     const now = new Date()
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     const { data } = await supabase
       .from('time_slots')
       .select('*')
+      .eq('space_id', spaceId)  // ← filter by space
       .lte('start_time', currentTime)
       .gte('end_time', currentTime)
       .eq('is_active', true)
@@ -101,7 +114,8 @@ export default function ScanPage() {
       return
     }
 
-    const timeSlot = await getCurrentTimeSlot()
+    // const timeSlot = await getCurrentTimeSlot()
+    const timeSlot = await getCurrentTimeSlot(user.space_id)  // ← pass space_id
     if (!timeSlot) { setScanState('not_available'); return }
     setCurrentTimeSlot(timeSlot)
 

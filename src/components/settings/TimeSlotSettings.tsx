@@ -3,15 +3,23 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
+type Space = {
+  id: number
+  space_name: string
+}
+
 type TimeSlot = {
   id: number
   label: string
   start_time: string
   end_time: string
   is_active: boolean
+  space_id: number
 }
 
 export default function TimeSlotSettings() {
+  const [spaces, setSpaces] = useState<Space[]>([])
+  const [activeSpace, setActiveSpace] = useState<number | null>(null)
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -19,18 +27,41 @@ export default function TimeSlotSettings() {
   const [form, setForm] = useState({ start_time: '', end_time: '' })
   const [saving, setSaving] = useState(false)
 
+  // Fetch spaces on mount
+  useEffect(() => {
+    const fetchSpaces = async () => {
+      const { data } = await supabase
+        .from('spaces')
+        .select('id, space_name')
+        .eq('is_active', true)
+        .order('id')
+      if (data) {
+        setSpaces(data)
+        if (data.length > 0) setActiveSpace(data[0].id)
+      }
+    }
+    fetchSpaces()
+  }, [])
+
+  // Fetch time slots when active space changes
+  useEffect(() => {
+    if (!activeSpace) return
+    fetchSlots()
+  }, [activeSpace])
+
   const fetchSlots = async () => {
+    if (!activeSpace) return
+    setLoading(true)
     const { data } = await supabase
       .from('time_slots')
       .select('*')
+      .eq('space_id', activeSpace)
+      .eq('is_active', true)
       .order('start_time')
     if (data) setSlots(data)
     setLoading(false)
   }
 
-  useEffect(() => { fetchSlots() }, [])
-
-  // Auto generate label from times
   const generateLabel = (start: string, end: string) => {
     const formatTime = (time: string) => {
       const [hours, minutes] = time.split(':')
@@ -40,6 +71,23 @@ export default function TimeSlotSettings() {
       return `${hour}${minutes !== '00' ? `:${minutes}` : ''}${ampm}`
     }
     return `${formatTime(start)} - ${formatTime(end)}`
+  }
+
+  const checkOverlap = (start: string, end: string, excludeId?: number) => {
+    const newStart = start.slice(0, 5)
+    const newEnd = end.slice(0, 5)
+
+    return slots.some(slot => {
+      if (excludeId && slot.id === excludeId) return false
+      const slotStart = slot.start_time.slice(0, 5)
+      const slotEnd = slot.end_time.slice(0, 5)
+
+      return (
+        (newStart >= slotStart && newStart < slotEnd) ||
+        (newEnd > slotStart && newEnd <= slotEnd) ||
+        (newStart <= slotStart && newEnd >= slotEnd)
+      )
+    })
   }
 
   const openAdd = () => {
@@ -55,92 +103,122 @@ export default function TimeSlotSettings() {
   }
 
   const handleSave = async () => {
+    if (!form.start_time || !form.end_time) {
+      alert('Please fill in both start and end time.')
+      return
+    }
+
+    if (form.start_time >= form.end_time) {
+      alert('End time must be after start time.')
+      return
+    }
+
+    // Check overlap
+    const hasOverlap = checkOverlap(
+      form.start_time,
+      form.end_time,
+      editingSlot?.id
+    )
+
+    if (hasOverlap) {
+      alert('This time slot overlaps with an existing slot for this space. Please choose a different time.')
+      return
+    }
+
     setSaving(true)
     const label = generateLabel(form.start_time, form.end_time)
+
     if (editingSlot) {
       await supabase
         .from('time_slots')
         .update({ ...form, label })
         .eq('id', editingSlot.id)
     } else {
-      await supabase
+      // Insert new time slot
+      const { data: newSlot } = await supabase
         .from('time_slots')
-        .insert({ ...form, label, is_active: true })
+        .insert({ ...form, label, is_active: true, space_id: activeSpace })
+        .select()
+        .single()
+
+      // Also insert space_timeslot_limit for this new slot
+      if (newSlot) {
+        await supabase
+          .from('space_timeslot_limits')
+          .insert({
+            space_id: activeSpace,
+            time_slot_id: newSlot.id,
+            max_users: 8 // default limit — admin can change in space settings
+          })
+      }
     }
+
     await fetchSlots()
     setShowModal(false)
     setSaving(false)
   }
 
-  // const handleDelete = async (slot: TimeSlot) => {
-  //   if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
-  //   await supabase.from('time_slots').delete().eq('id', slot.id)
-  //   await fetchSlots()
-  // }
-
   const handleDelete = async (slot: TimeSlot) => {
     if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
 
-    console.log('Deleting slot:', slot.id) // ← add
-
-    // Step 1 — Delete from space_timeslot_limits
-    const { error: limitsError } = await supabase
+    // Delete space_timeslot_limits first
+    await supabase
       .from('space_timeslot_limits')
       .delete()
       .eq('time_slot_id', slot.id)
 
-    console.log('Limits delete error:', limitsError) // ← add
-
-    if (limitsError) {
-      alert('Something went wrong at limits. Please try again.')
-      return
-    }
-
-    // Step 2 — Delete from availability
-    const { error: availError } = await supabase
+    // Delete availability
+    await supabase
       .from('availability')
       .delete()
       .eq('time_slot_id', slot.id)
 
-    console.log('Availability delete error:', availError) // ← add
-
-    if (availError) {
-      alert('Something went wrong at availability. Please try again.')
-      return
-    }
-
-    // Step 3 — Delete the time slot
-    const { error: slotError } = await supabase
+    // Delete time slot
+    await supabase
       .from('time_slots')
       .delete()
       .eq('id', slot.id)
 
-    console.log('Slot delete error:', slotError) // ← add
-
-    if (slotError) {
-      alert('Something went wrong at slot. Please try again.')
-      return
-    }
-
     await fetchSlots()
   }
 
-  if (loading) return <p className="text-gray-400">Loading...</p>
-
   return (
     <div>
+      {/* Space Tabs */}
+      <div className="flex border-b mb-6 overflow-x-auto">
+        {spaces.map(space => (
+          <button
+            key={space.id}
+            onClick={() => setActiveSpace(space.id)}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeSpace === space.id
+                ? 'border-[#FF6347] text-[#FF6347]'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {space.space_name}
+          </button>
+        ))}
+      </div>
+
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">Time Slots</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Time Slots — {spaces.find(s => s.id === activeSpace)?.space_name}
+        </h2>
         <button
           onClick={openAdd}
-          className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg text-sm font-medium"
+          className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
         >
-          Add Slot
+           Add Slot
         </button>
       </div>
 
-      {slots.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">No time slots yet</p>
+      {loading ? (
+        <p className="text-gray-400">Loading...</p>
+      ) : slots.length === 0 ? (
+        <p className="text-gray-400 text-center py-8">
+          No time slots for this space yet
+        </p>
       ) : (
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -179,7 +257,7 @@ export default function TimeSlotSettings() {
 
       {/* Modal */}
       {showModal && (
-        <div className="bg-[#FAF2F0] fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[#FAF2F0] bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {editingSlot ? 'Edit Time Slot' : 'Add Time Slot'}
@@ -191,7 +269,7 @@ export default function TimeSlotSettings() {
                   type="time"
                   value={form.start_time}
                   onChange={e => setForm({ ...form, start_time: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
               <div>
@@ -200,11 +278,11 @@ export default function TimeSlotSettings() {
                   type="time"
                   value={form.end_time}
                   onChange={e => setForm({ ...form, end_time: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
               {form.start_time && form.end_time && (
-                <p className="text-sm text-black">
+                <p className="text-sm text-[#FF6347]">
                   Label: {generateLabel(form.start_time, form.end_time)}
                 </p>
               )}
@@ -213,13 +291,13 @@ export default function TimeSlotSettings() {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.start_time || !form.end_time}
-                className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
+                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg"
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
               >
                 Cancel
               </button>
@@ -230,7 +308,6 @@ export default function TimeSlotSettings() {
     </div>
   )
 }
-
 // 'use client'
 
 // import { useState, useEffect } from 'react'
@@ -249,7 +326,7 @@ export default function TimeSlotSettings() {
 //   const [loading, setLoading] = useState(true)
 //   const [showModal, setShowModal] = useState(false)
 //   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null)
-//   const [form, setForm] = useState({ label: '', start_time: '', end_time: '' })
+//   const [form, setForm] = useState({ start_time: '', end_time: '' })
 //   const [saving, setSaving] = useState(false)
 
 //   const fetchSlots = async () => {
@@ -263,44 +340,98 @@ export default function TimeSlotSettings() {
 
 //   useEffect(() => { fetchSlots() }, [])
 
+//   // Auto generate label from times
+//   const generateLabel = (start: string, end: string) => {
+//     const formatTime = (time: string) => {
+//       const [hours, minutes] = time.split(':')
+//       const h = parseInt(hours)
+//       const ampm = h >= 12 ? 'PM' : 'AM'
+//       const hour = h % 12 || 12
+//       return `${hour}${minutes !== '00' ? `:${minutes}` : ''}${ampm}`
+//     }
+//     return `${formatTime(start)} - ${formatTime(end)}`
+//   }
+
 //   const openAdd = () => {
 //     setEditingSlot(null)
-//     setForm({ label: '', start_time: '', end_time: '' })
+//     setForm({ start_time: '', end_time: '' })
 //     setShowModal(true)
 //   }
 
 //   const openEdit = (slot: TimeSlot) => {
 //     setEditingSlot(slot)
-//     setForm({
-//       label: slot.label,
-//       start_time: slot.start_time,
-//       end_time: slot.end_time
-//     })
+//     setForm({ start_time: slot.start_time, end_time: slot.end_time })
 //     setShowModal(true)
 //   }
 
 //   const handleSave = async () => {
 //     setSaving(true)
+//     const label = generateLabel(form.start_time, form.end_time)
 //     if (editingSlot) {
 //       await supabase
 //         .from('time_slots')
-//         .update(form)
+//         .update({ ...form, label })
 //         .eq('id', editingSlot.id)
 //     } else {
 //       await supabase
 //         .from('time_slots')
-//         .insert({ ...form, is_active: true })
+//         .insert({ ...form, label, is_active: true })
 //     }
 //     await fetchSlots()
 //     setShowModal(false)
 //     setSaving(false)
 //   }
 
-//   const handleToggle = async (slot: TimeSlot) => {
-//     await supabase
+//   // const handleDelete = async (slot: TimeSlot) => {
+//   //   if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
+//   //   await supabase.from('time_slots').delete().eq('id', slot.id)
+//   //   await fetchSlots()
+//   // }
+
+//   const handleDelete = async (slot: TimeSlot) => {
+//     if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
+
+//     console.log('Deleting slot:', slot.id) // ← add
+
+//     // Step 1 — Delete from space_timeslot_limits
+//     const { error: limitsError } = await supabase
+//       .from('space_timeslot_limits')
+//       .delete()
+//       .eq('time_slot_id', slot.id)
+
+//     console.log('Limits delete error:', limitsError) // ← add
+
+//     if (limitsError) {
+//       alert('Something went wrong at limits. Please try again.')
+//       return
+//     }
+
+//     // Step 2 — Delete from availability
+//     const { error: availError } = await supabase
+//       .from('availability')
+//       .delete()
+//       .eq('time_slot_id', slot.id)
+
+//     console.log('Availability delete error:', availError) // ← add
+
+//     if (availError) {
+//       alert('Something went wrong at availability. Please try again.')
+//       return
+//     }
+
+//     // Step 3 — Delete the time slot
+//     const { error: slotError } = await supabase
 //       .from('time_slots')
-//       .update({ is_active: !slot.is_active })
+//       .delete()
 //       .eq('id', slot.id)
+
+//     console.log('Slot delete error:', slotError) // ← add
+
+//     if (slotError) {
+//       alert('Something went wrong at slot. Please try again.')
+//       return
+//     }
+
 //     await fetchSlots()
 //   }
 
@@ -312,9 +443,9 @@ export default function TimeSlotSettings() {
 //         <h2 className="text-lg font-semibold text-gray-800">Time Slots</h2>
 //         <button
 //           onClick={openAdd}
-//           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+//           className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg text-sm font-medium"
 //         >
-//            Add Slot
+//           Add Slot
 //         </button>
 //       </div>
 
@@ -324,10 +455,9 @@ export default function TimeSlotSettings() {
 //         <table className="w-full">
 //           <thead className="bg-gray-50">
 //             <tr>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Label</th>
+//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
 //               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
 //               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
 //               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
 //             </tr>
 //           </thead>
@@ -337,27 +467,18 @@ export default function TimeSlotSettings() {
 //                 <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
 //                 <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
 //                 <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
-//                 <td className="px-4 py-3">
-//                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-//                     slot.is_active
-//                       ? 'bg-green-100 text-green-700'
-//                       : 'bg-red-100 text-red-700'
-//                   }`}>
-//                     {slot.is_active ? 'Active' : 'Inactive'}
-//                   </span>
-//                 </td>
 //                 <td className="px-4 py-3 flex gap-3">
 //                   <button
 //                     onClick={() => openEdit(slot)}
 //                     className="text-blue-600 hover:text-blue-800 text-sm"
 //                   >
-//                      Edit
+//                     Edit
 //                   </button>
 //                   <button
-//                     onClick={() => handleToggle(slot)}
-//                     className="text-gray-500 hover:text-gray-700 text-sm"
+//                     onClick={() => handleDelete(slot)}
+//                     className="text-red-500 hover:text-red-700 text-sm"
 //                   >
-//                     {slot.is_active ? '❌ Deactivate' : '✅ Activate'}
+//                     Delete
 //                   </button>
 //                 </td>
 //               </tr>
@@ -368,22 +489,12 @@ export default function TimeSlotSettings() {
 
 //       {/* Modal */}
 //       {showModal && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//         <div className="bg-[#FAF2F0] fixed inset-0 flex items-center justify-center z-50">
 //           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
 //             <h3 className="text-lg font-semibold text-gray-800 mb-4">
 //               {editingSlot ? 'Edit Time Slot' : 'Add Time Slot'}
 //             </h3>
 //             <div className="space-y-4">
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
-//                 <input
-//                   type="text"
-//                   value={form.label}
-//                   onChange={e => setForm({ ...form, label: e.target.value })}
-//                   placeholder="e.g. 9AM - 10AM"
-//                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 />
-//               </div>
 //               <div>
 //                 <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
 //                 <input
@@ -402,18 +513,23 @@ export default function TimeSlotSettings() {
 //                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
 //                 />
 //               </div>
+//               {form.start_time && form.end_time && (
+//                 <p className="text-sm text-black">
+//                   Label: {generateLabel(form.start_time, form.end_time)}
+//                 </p>
+//               )}
 //             </div>
 //             <div className="flex gap-3 mt-6">
 //               <button
 //                 onClick={handleSave}
-//                 disabled={saving}
-//                 className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+//                 disabled={saving || !form.start_time || !form.end_time}
+//                 className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
 //               >
 //                 {saving ? 'Saving...' : 'Save'}
 //               </button>
 //               <button
 //                 onClick={() => setShowModal(false)}
-//                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
+//                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg"
 //               >
 //                 Cancel
 //               </button>

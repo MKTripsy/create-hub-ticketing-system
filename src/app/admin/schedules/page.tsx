@@ -35,19 +35,19 @@ export default function SchedulesPage() {
 
   const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-  // Fetch spaces and time slots
+
+  // Fetch spaces only on mount
   useEffect(() => {
     const fetchData = async () => {
-      const [spacesRes, timeSlotsRes] = await Promise.all([
-        supabase.from('spaces').select('id, space_name').eq('is_active', true),
-        supabase.from('time_slots').select('*').eq('is_active', true).order('start_time')
-      ])
+      const { data } = await supabase
+        .from('spaces')
+        .select('id, space_name')
+        .eq('is_active', true)
 
-      if (spacesRes.data) {
-        setSpaces(spacesRes.data)
-        if (spacesRes.data.length > 0) setActiveSpace(spacesRes.data[0].id)
+      if (data) {
+        setSpaces(data)
+        if (data.length > 0) setActiveSpace(data[0].id)
       }
-      if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
       setLoading(false)
     }
     fetchData()
@@ -60,46 +60,57 @@ export default function SchedulesPage() {
     const fetchSchedule = async () => {
       setLoading(true)
 
-      // Fetch space operating days
-      const { data: daysData } = await supabase
-        .from('space_operating_days')
-        .select('day')
-        .eq('space_id', activeSpace)
-        .order('id')
+      // Fetch space operating days AND time slots together
+      const [daysRes, slotsRes, availRes] = await Promise.all([
+        supabase
+          .from('space_operating_days')
+          .select('day')
+          .eq('space_id', activeSpace)
+          .order('id'),
+        supabase
+          .from('time_slots')
+          .select('*')
+          .eq('is_active', true)
+          .eq('space_id', activeSpace)  // ← filter by space
+          .order('start_time'),
+        supabase
+          .from('availability')
+          .select(`
+            user_id,
+            day,
+            time_slot_id,
+            users (
+              first_name,
+              last_name,
+              custom_id
+            )
+          `)
+          .eq('space_id', activeSpace)
+      ])
 
-      if (daysData) {
-        const sorted = daysData
+      if (daysRes.data) {
+        const sorted = daysRes.data
           .map(d => d.day)
           .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
         setSpaceDays(sorted)
         setSelectedDay('All')
       }
 
-      // Fetch availability for this space
-      const { data: availData } = await supabase
-        .from('availability')
-        .select(`
-          user_id,
-          day,
-          time_slot_id,
-          users (
-            first_name,
-            last_name,
-            custom_id
-          )
-        `)
-        .eq('space_id', activeSpace)
+      // Set time slots for this space
+      const currentSlots = slotsRes.data || []
+      setTimeSlots(currentSlots)
 
-      if (!availData) { setLoading(false); return }
+      if (!availRes.data) { setLoading(false); return }
 
-      // Organize data: { time_slot_id: { day: [users] } }
+      // Organize data using currentSlots directly
+      // (not timeSlots state since it may not have updated yet)
       const organized: Record<number, Record<string, ScheduleEntry[]>> = {}
 
-      timeSlots.forEach(slot => {
+      currentSlots.forEach(slot => {
         organized[slot.id] = {}
       })
 
-      availData.forEach((entry: any) => {
+      availRes.data.forEach((entry: any) => {
         const slotId = entry.time_slot_id
         const day = entry.day
 
@@ -120,7 +131,93 @@ export default function SchedulesPage() {
     }
 
     fetchSchedule()
-  }, [activeSpace, timeSlots])
+  }, [activeSpace]) 
+  // Fetch spaces and time slots
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const [spacesRes, timeSlotsRes] = await Promise.all([
+  //       supabase.from('spaces').select('id, space_name').eq('is_active', true)
+  //       // supabase.from('time_slots').select('*').eq('is_active', true).order('start_time')
+  //     ])
+
+  //     if (spacesRes.data) {
+  //       setSpaces(spacesRes.data)
+  //       if (spacesRes.data.length > 0) setActiveSpace(spacesRes.data[0].id)
+  //     }
+  //     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data)
+  //     setLoading(false)
+  //   }
+  //   fetchData()
+  // }, [])
+
+  // // Fetch schedule data when active space changes
+  // useEffect(() => {
+  //   if (!activeSpace) return
+
+  //   const fetchSchedule = async () => {
+  //     setLoading(true)
+
+  //     // Fetch space operating days
+  //     const { data: daysData } = await supabase
+  //       .from('space_operating_days')
+  //       .select('day')
+  //       .eq('space_id', activeSpace)
+  //       .order('id')
+
+  //     if (daysData) {
+  //       const sorted = daysData
+  //         .map(d => d.day)
+  //         .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
+  //       setSpaceDays(sorted)
+  //       setSelectedDay('All')
+  //     }
+
+  //     // Fetch availability for this space
+  //     const { data: availData } = await supabase
+  //       .from('availability')
+  //       .select(`
+  //         user_id,
+  //         day,
+  //         time_slot_id,
+  //         users (
+  //           first_name,
+  //           last_name,
+  //           custom_id
+  //         )
+  //       `)
+  //       .eq('space_id', activeSpace)
+
+  //     if (!availData) { setLoading(false); return }
+
+  //     // Organize data: { time_slot_id: { day: [users] } }
+  //     const organized: Record<number, Record<string, ScheduleEntry[]>> = {}
+
+  //     timeSlots.forEach(slot => {
+  //       organized[slot.id] = {}
+  //     })
+
+  //     availData.forEach((entry: any) => {
+  //       const slotId = entry.time_slot_id
+  //       const day = entry.day
+
+  //       if (!organized[slotId]) organized[slotId] = {}
+  //       if (!organized[slotId][day]) organized[slotId][day] = []
+
+  //       organized[slotId][day].push({
+  //         user_id: entry.user_id,
+  //         first_name: entry.users?.first_name,
+  //         last_name: entry.users?.last_name,
+  //         custom_id: entry.users?.custom_id,
+  //         day
+  //       })
+  //     })
+
+  //     setScheduleData(organized)
+  //     setLoading(false)
+  //   }
+
+  //   fetchSchedule()
+  // }, [activeSpace, timeSlots])
 
   const filteredDays = selectedDay === 'All' ? spaceDays : [selectedDay]
 
