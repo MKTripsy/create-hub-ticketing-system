@@ -7,6 +7,7 @@ import QRCode from 'react-qr-code'
 import AdminGuard from '@/components/AdminGuard'
 import { toPng } from 'html-to-image'
 import SpaceScheduleView from '@/components/SpaceScheduleView'
+import { createNotification } from '@/lib/notifications'
 
 type Space = {
   id: number
@@ -277,6 +278,11 @@ export default function AddUserPage() {
       setQrValue(qrCode)
       setSavedUser({ first_name: form.first_name, last_name: form.last_name })
       setSuccess(true)
+        
+      await createNotification(
+        'user_added',
+        `Admin added new user: ${form.first_name} ${form.last_name} (${customId})`
+      )
 
     } catch (error) {
       console.error('Error adding user:', error)

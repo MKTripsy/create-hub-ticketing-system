@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import QRCode from 'react-qr-code'
 import AdminGuard from '@/components/AdminGuard'
 import SpaceScheduleView from '@/components/SpaceScheduleView'
+import { createNotification } from '@/lib/notifications'
 
 type Space = {
   id: number
@@ -267,6 +268,11 @@ export default function EditUserPage() {
       setIsEditing(false)
       alert('User updated successfully!')
 
+      await createNotification(
+        'user_edited',
+        `Admin updated user: ${form.first_name} ${form.last_name}`
+      )
+
     } catch (error) {
       console.error('Error updating user:', error)
       alert('Something went wrong. Please try again.')
@@ -372,6 +378,11 @@ export default function EditUserPage() {
         .delete()
         .eq('id', numericId)
       if (userError) throw userError
+
+      await createNotification(
+        'user_deleted', 
+        `Admin deleted user: ${form.first_name} ${form.last_name}`
+      )
 
       router.push('/admin/users')
 

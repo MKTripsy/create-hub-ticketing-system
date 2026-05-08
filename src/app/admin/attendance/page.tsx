@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import AdminGuard from '@/components/AdminGuard'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { createNotification } from '@/lib/notifications'
 
 type AttendanceLog = {
   id: number
@@ -119,6 +120,11 @@ export default function AttendanceLogsPage() {
       setEditingId(null)
       fetchLogs()
 
+      await createNotification(
+        'attendance_edited',
+        `Admin edited attendance record #${id}`
+      )
+
     } catch (error) {
       console.error('Edit error:', error)
       alert('Something went wrong. Please try again.')
@@ -227,7 +233,13 @@ export default function AttendanceLogsPage() {
       return
     }
 
+    await createNotification(
+      'attendance_deleted',
+      `Admin deleted attendance record #${id}`
+    )
+
     fetchLogs()
+    await createNotification('attendance_deleted', `Admin deleted an attendance record`)
   }
 
   const fetchUsers = async () => {
@@ -282,6 +294,14 @@ export default function AttendanceLogsPage() {
       })
       fetchLogs()
 
+      const userName = `${users.find(u => u.id === parseInt(manualForm.user_id))?.first_name} ${users.find(u => u.id === parseInt(manualForm.user_id))?.last_name}`
+      await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`)
+
+      // await createNotification(
+      //   'manual_entry',
+      //   `Admin added manual attendance entry for ${users.find(u => u.id === parseInt(manualForm.user_id))?.first_name} ${users.find(u => u.id === parseInt(manualForm.user_id))?.last_name}`
+      // )
+
     } catch (error) {
       console.error('Manual entry error:', error)
       alert('Something went wrong. Please try again.')
@@ -296,13 +316,6 @@ export default function AttendanceLogsPage() {
     const fullName = `${log.users?.first_name} ${log.users?.last_name}`.toLowerCase()
     return fullName.includes(searchName.toLowerCase())
   })
-
-  // const formatTime = (timestamp: string) => {
-  //   return new Date(timestamp).toLocaleTimeString([], {
-  //     hour: '2-digit',
-  //     minute: '2-digit'
-  //   })
-  // }
 
   const formatTime = (timestamp: string) => {
   return new Date(timestamp).toLocaleTimeString('en-PH', {

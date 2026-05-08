@@ -36,6 +36,13 @@ type RecentLog = {
   time_ended: string | null
 }
 
+type Notification = {
+  id: number
+  type: string
+  message: string
+  created_at: string
+}
+
 // const COLORS = ['#6366f1', '#f59e0b']
 const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4']
 
@@ -49,6 +56,7 @@ export default function DashboardPage() {
   const [spaceData, setSpaceData] = useState<SpaceDistribution[]>([])
   const [recentLogs, setRecentLogs] = useState<RecentLog[]>([])
   const [spaces, setSpaces] = useState<{ id: number; space_name: string }[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -204,14 +212,47 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchDashboardData()
+    fetchNotifications()
   }, [])
 
-  // const formatTime = (timestamp: string) => {
-  //   return new Date(timestamp).toLocaleTimeString([], {
-  //     hour: '2-digit',
-  //     minute: '2-digit'
-  //   })
-  // }
+  const fetchNotifications = async () => {
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (data) setNotifications(data)
+  }
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'user_added': return '👤'
+      case 'user_edited': return '✏️'
+      case 'user_deleted': return '🗑️'
+      case 'clock_in': return '✅'
+      case 'clock_out': return '🚪'
+      case 'manual_entry': return '📝'
+      case 'attendance_edited': return '🔧'
+      case 'attendance_deleted': return '❌'
+      case 'system': return '⚙️'
+      default: return '🔔'
+    }
+  }
+
+  const getNotificationStyle = (type: string) => {
+    switch (type) {
+      case 'user_added': return 'bg-green-50'
+      case 'user_edited': return 'bg-blue-50'
+      case 'user_deleted': return 'bg-red-50'
+      case 'clock_in': return 'bg-green-50'
+      case 'clock_out': return 'bg-gray-50'
+      case 'manual_entry': return 'bg-yellow-50'
+      case 'attendance_edited': return 'bg-blue-50'
+      case 'attendance_deleted': return 'bg-red-50'
+      case 'system': return 'bg-purple-50'
+      default: return 'bg-gray-50'
+    }
+  }
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('en-PH', {
         hour: '2-digit',
@@ -350,7 +391,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-xl shadow p-6">
+          {/* <div className="bg-white rounded-xl shadow p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-800">
                 Recent Activity Today
@@ -406,6 +447,50 @@ export default function DashboardPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+          </div> */}
+
+          {/* Notification Feed */}
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">
+                 Notifications
+              </h2>
+              <button
+                onClick={fetchNotifications}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                 Refresh
+              </button>
+            </div>
+
+            {notifications.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">
+                No notifications yet
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {notifications.map(note => (
+                  <div
+                    key={note.id}
+                    className={`flex items-start gap-3 px-4 py-3 rounded-lg text-sm ${getNotificationStyle(note.type)}`}
+                  >
+                    {/* <span className="text-lg">{getNotificationIcon(note.type)}</span> */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-800">{note.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(note.created_at).toLocaleString('en-PH', {
+                          timeZone: 'Asia/Manila',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
