@@ -37,6 +37,7 @@ export default function SpaceScheduleView({ spaceId, operatingDays, excludeUserI
         .from('time_slots')
         .select('id, label')
         .eq('is_active', true)
+        .eq('space_id', spaceId)
         .order('start_time')
 
       if (!slotsData) { setLoading(false); return }

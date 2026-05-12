@@ -9,7 +9,7 @@ export type User = {
   first_name: string
   last_name: string
   grade_level: string
-  space_id: number
+  primary_space_id: number
   photo_url: string | null
   spaces: Space | null
 }

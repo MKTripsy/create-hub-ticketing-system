@@ -58,7 +58,8 @@ export default function DashboardPage() {
   const [spaces, setSpaces] = useState<{ id: number; space_name: string }[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
 
-  const today = new Date().toISOString().split('T')[0]
+  // const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
 
   const getWeekDates = () => {
     const dates = []
