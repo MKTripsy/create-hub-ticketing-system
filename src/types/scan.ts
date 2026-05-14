@@ -21,6 +21,24 @@ export type TimeSlot = {
   end_time: string
 }
 
+export type SurveyQuestionOption = {
+  id: number
+  question_id: number
+  label: string
+  order_index: number
+}
+
+export type SurveyQuestion = {
+  id: number
+  space_id: number
+  question_text: string
+  answer_type: 'radio' | 'checkbox' | 'open_ended'
+  survey_type: 'pre' | 'post'
+  order_index: number
+  is_active: boolean
+  options: SurveyQuestionOption[]
+}
+
 export type SurveyOption = {
   id: number
   label: string
@@ -29,6 +47,7 @@ export type SurveyOption = {
 export type AttendanceSession = {
   id: number
   time_started: string
+  accessed_space?: number
 }
 
 export type ScanState =

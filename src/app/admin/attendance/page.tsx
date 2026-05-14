@@ -21,8 +21,8 @@ type AttendanceLog = {
   spaces: {
     space_name: string
   } | null
-  pre_survey: string | null
-  post_survey: string | null
+  pre_surveys: string[]
+  post_surveys: string[]
 }
 
 type User = {
@@ -138,7 +138,6 @@ export default function AttendanceLogsPage() {
   const fetchLogs = async () => {
     setLoading(true)
 
-    // Fetch attendance sessions
     let query = supabase
       .from('attendance_session')
       .select(`
@@ -172,23 +171,50 @@ export default function AttendanceLogsPage() {
     // Fetch survey responses for each session
     const logsWithSurveys = await Promise.all(
       (data ?? []).map(async (log) => {
-        const { data: surveys } = await supabase
+        const { data: responses } = await supabase
           .from('survey_responses')
           .select(`
-            type,
-            survey_options (
+            question_id,
+            option_id,
+            text_response,
+            survey_questions (
+              question_text,
+              answer_type,
+              survey_type
+            ),
+            survey_question_options (
               label
             )
           `)
           .eq('session_id', log.id)
 
-        const preSurvey = surveys?.find(s => s.type === 'pre')
-        const postSurvey = surveys?.find(s => s.type === 'post')
+        const preSurveys: string[] = []
+        const postSurveys: string[] = []
+
+        if (responses) {
+          responses.forEach((r: any) => {
+            const surveyType = r.survey_questions?.survey_type
+            const questionText = r.survey_questions?.question_text
+            const answerType = r.survey_questions?.answer_type
+
+            let answerText = ''
+            if (answerType === 'open_ended') {
+              answerText = r.text_response || ''
+            } else {
+              answerText = r.survey_question_options?.label || ''
+            }
+
+            const formatted = `${questionText}: ${answerText}`
+
+            if (surveyType === 'pre') preSurveys.push(formatted)
+            else if (surveyType === 'post') postSurveys.push(formatted)
+          })
+        }
 
         return {
           ...log,
-          pre_survey: (preSurvey?.survey_options as any)?.label || null,
-          post_survey: (postSurvey?.survey_options as any)?.label || null,
+          pre_surveys: preSurveys,
+          post_surveys: postSurveys,
         }
       })
     )
@@ -364,18 +390,49 @@ export default function AttendanceLogsPage() {
 
     const logsWithSurveys = await Promise.all(
       data.map(async (log) => {
-        const { data: surveys } = await supabase
+        const { data: responses } = await supabase
           .from('survey_responses')
-          .select(`type, survey_options ( label )`)
+          .select(`
+            question_id,
+            option_id,
+            text_response,
+            survey_questions (
+              question_text,
+              answer_type,
+              survey_type
+            ),
+            survey_question_options (
+              label
+            )
+          `)
           .eq('session_id', log.id)
 
-        const preSurvey = surveys?.find(s => s.type === 'pre')
-        const postSurvey = surveys?.find(s => s.type === 'post')
+        const preSurveys: string[] = []
+        const postSurveys: string[] = []
+
+        if (responses) {
+          responses.forEach((r: any) => {
+            const surveyType = r.survey_questions?.survey_type
+            const questionText = r.survey_questions?.question_text
+            const answerType = r.survey_questions?.answer_type
+
+            let answerText = ''
+            if (answerType === 'open_ended') {
+              answerText = r.text_response || ''
+            } else {
+              answerText = r.survey_question_options?.label || ''
+            }
+
+            const formatted = `${questionText}: ${answerText}`
+            if (surveyType === 'pre') preSurveys.push(formatted)
+            else if (surveyType === 'post') postSurveys.push(formatted)
+          })
+        }
 
         return {
           ...log,
-          pre_survey: (preSurvey?.survey_options as any)?.label || null,
-          post_survey: (postSurvey?.survey_options as any)?.label || null,
+          pre_surveys: preSurveys,
+          post_surveys: postSurveys,
         }
       })
     )
@@ -400,8 +457,8 @@ export default function AttendanceLogsPage() {
       formatTime(log.time_started),
       log.time_ended ? formatTime(log.time_ended) : 'Active',
       formatDuration(log.time_started, log.time_ended),
-      log.pre_survey || '—',
-      log.post_survey || '—',
+      log.pre_surveys.join(' | ') || '—',
+      log.post_surveys.join(' | ') || '—',
     ])
 
     const csvContent = [headers, ...rows]
@@ -450,8 +507,8 @@ export default function AttendanceLogsPage() {
         formatTime(log.time_started),
         log.time_ended ? formatTime(log.time_ended) : 'Active',
         formatDuration(log.time_started, log.time_ended),
-        log.pre_survey || '—',
-        log.post_survey || '—',
+        log.pre_surveys.join(' | ') || '—',
+        log.post_surveys.join(' | ') || '—',
       ]),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [99, 102, 241] },
@@ -716,10 +773,26 @@ export default function AttendanceLogsPage() {
                               {formatDuration(log.time_started, log.time_ended)}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">
-                              {log.pre_survey || <span className="text-gray-300">—</span>}
+                              {log.pre_surveys.length === 0 ? (
+                                <span className="text-gray-300">—</span>
+                              ) : (
+                                <div className="space-y-1">
+                                  {log.pre_surveys.map((s: string, i: number) => (
+                                    <p key={i} className="text-xs">{s}</p>
+                                  ))}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">
-                              {log.post_survey || <span className="text-gray-300">—</span>}
+                              {log.post_surveys.length === 0 ? (
+                                <span className="text-gray-300">—</span>
+                              ) : (
+                                <div className="space-y-1">
+                                  {log.post_surveys.map((s: string, i: number) => (
+                                    <p key={i} className="text-xs">{s}</p>
+                                  ))}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex gap-3">
