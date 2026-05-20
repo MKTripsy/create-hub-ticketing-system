@@ -5,21 +5,7 @@ import { supabase } from '@/lib/supabase'
 import QRCode from 'react-qr-code'
 import { toPng } from 'html-to-image'
 import AdminGuard from '@/components/AdminGuard'
-// import { useReactToPrint } from 'react-to-print'
-
-// type User = {
-//   id: number
-//   custom_id: string
-//   first_name: string
-//   last_name: string
-//   birthdate: string
-//   grade_level: string
-//   qr_code: string
-//   is_active: boolean
-//   spaces: {
-//     space_name: string
-//   } | null
-// }
+import { useAuth } from '@/context/AuthContext'
 
 type Space = {
   space_name: string
@@ -45,6 +31,7 @@ export default function UserListPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<HTMLDivElement>(null)
+  const { admin } = useAuth()
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -65,6 +52,7 @@ export default function UserListPage() {
         space_name
       )
     `)
+    .eq('orphanage_id', admin?.orphanage_id)
     .order('id', { ascending: false })
 
   if (error) {
@@ -83,11 +71,6 @@ useEffect(() => {
   return () => window.removeEventListener('focus', fetchUsers)
 }, [])
 
-  // Print QR code
-//   const handlePrint = useReactToPrint({
-//   documentTitle: 'QR Code',
-//   onBeforePrint: () => Promise.resolve(),
-//     })
 const handlePrint = () => {
   const printContent = printRef.current
   if (!printContent) return

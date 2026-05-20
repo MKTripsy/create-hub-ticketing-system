@@ -6,6 +6,7 @@ import AdminGuard from '@/components/AdminGuard'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { createNotification } from '@/lib/notifications'
+import { useAuth } from '@/context/AuthContext'
 
 type AttendanceLog = {
   id: number
@@ -62,6 +63,7 @@ export default function AttendanceLogsPage() {
   const [showExportModal, setShowExportModal] = useState(false)
   const [exportScope, setExportScope] = useState<'filtered' | 'all'>('filtered')
   const [exporting, setExporting] = useState(false)
+  const { admin } = useAuth()
 
   const handleEditStart = (log: AttendanceLog) => {
     setEditingId(log.id)
@@ -120,10 +122,15 @@ export default function AttendanceLogsPage() {
       setEditingId(null)
       fetchLogs()
 
+      // await createNotification(
+      //   'attendance_edited',
+      //   `Admin edited attendance record #${id}`
+      // )
+
       await createNotification(
-        'attendance_edited',
-        `Admin edited attendance record #${id}`
-      )
+        'attendance_edited', 
+        `Admin edited attendance record #${id}`,
+         admin?.orphanage_id ?? undefined)
 
     } catch (error) {
       console.error('Edit error:', error)
@@ -137,6 +144,8 @@ export default function AttendanceLogsPage() {
 
   const fetchLogs = async () => {
     setLoading(true)
+
+    const spaceIds = spaces.map(s => s.id)
 
     let query = supabase
       .from('attendance_session')
@@ -157,6 +166,8 @@ export default function AttendanceLogsPage() {
       `)
       .order('time_started', { ascending: false })
 
+    // if (spaceIds.length > 0) query = query.in('accessed_space', spaceIds)
+    if (spaceIds.length > 0) query = query.in('accessed_space', spaceIds)
     if (filterDate) query = query.eq('date', filterDate)
     if (filterSpace) query = query.eq('accessed_space', parseInt(filterSpace))
 
@@ -228,6 +239,7 @@ export default function AttendanceLogsPage() {
       .from('spaces')
       .select('id, space_name')
       .eq('is_active', true)
+      .eq('orphanage_id', admin?.orphanage_id)
     if (data) setSpaces(data)
   }
 
@@ -259,10 +271,13 @@ export default function AttendanceLogsPage() {
       return
     }
 
-    await createNotification(
-      'attendance_deleted',
-      `Admin deleted attendance record #${id}`
-    )
+    // await createNotification(
+    //   'attendance_deleted',
+    //   `Admin deleted attendance record #${id}`
+    // )
+    await createNotification('attendance_deleted', 
+      `Admin deleted attendance record #${id}`, 
+      admin?.orphanage_id ?? undefined)
 
     fetchLogs()
     await createNotification('attendance_deleted', `Admin deleted an attendance record`)
@@ -273,6 +288,7 @@ export default function AttendanceLogsPage() {
       .from('users')
       .select('id, first_name, last_name, custom_id')
       .eq('is_active', true)
+      .eq('orphanage_id', admin?.orphanage_id)
       .order('first_name')
     if (data) setUsers(data)
   }
@@ -321,7 +337,8 @@ export default function AttendanceLogsPage() {
       fetchLogs()
 
       const userName = `${users.find(u => u.id === parseInt(manualForm.user_id))?.first_name} ${users.find(u => u.id === parseInt(manualForm.user_id))?.last_name}`
-      await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`)
+      // await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`)
+      await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`, admin?.orphanage_id ?? undefined)
 
       // await createNotification(
       //   'manual_entry',
@@ -365,6 +382,8 @@ export default function AttendanceLogsPage() {
     if (scope === 'filtered') {
       return filteredLogs
     }
+
+    const spaceIds = spaces.map(s => s.id)
 
     // Fetch all records
     const { data, error } = await supabase

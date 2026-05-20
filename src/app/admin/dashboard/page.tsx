@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import AdminGuard from '@/components/AdminGuard'
+import { useAuth } from '@/context/AuthContext'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer
@@ -57,6 +58,7 @@ export default function DashboardPage() {
   const [recentLogs, setRecentLogs] = useState<RecentLog[]>([])
   const [spaces, setSpaces] = useState<{ id: number; space_name: string }[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const { admin } = useAuth()
 
   // const today = new Date().toISOString().split('T')[0]
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
@@ -83,6 +85,7 @@ export default function DashboardPage() {
       .from('spaces')
       .select('id, space_name')
       .eq('is_active', true)
+      .eq('orphanage_id', admin?.orphanage_id)
 
     if (spacesData) setSpaces(spacesData)
 
@@ -91,9 +94,11 @@ export default function DashboardPage() {
       .from('users')
       .select('id', { count: 'exact' })
       .eq('is_active', true)
+      .eq('orphanage_id', admin?.orphanage_id)
     setTotalUsers(usersCount ?? 0)
 
     // Today's sessions
+    const spaceIds = spacesData?.map(s => s.id) || []
     const { data: todaySessions } = await supabase
       .from('attendance_session')
       .select(`
@@ -104,6 +109,7 @@ export default function DashboardPage() {
         )
       `)
       .eq('date', today)
+      .in('accessed_space', spaceIds.length > 0 ? spaceIds : [0])
 
     const active = todaySessions?.filter(s => !s.time_ended).length ?? 0
     const completed = todaySessions?.filter(s => s.time_ended).length ?? 0
@@ -148,6 +154,7 @@ export default function DashboardPage() {
             )
           `)
           .eq('date', date)
+          .in('accessed_space', spaceIds.length > 0 ? spaceIds : [0])
 
         // const arts = sessions?.filter(
         //   s => (s.spaces as any)?.space_name === 'Arts Space'
@@ -220,6 +227,7 @@ export default function DashboardPage() {
     const { data } = await supabase
       .from('notifications')
       .select('*')
+      .eq('orphanage_id', admin?.orphanage_id)
       .order('created_at', { ascending: false })
       .limit(50)
     if (data) setNotifications(data)

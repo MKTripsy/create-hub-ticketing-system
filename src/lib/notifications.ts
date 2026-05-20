@@ -13,11 +13,12 @@ type NotificationType =
 
 export const createNotification = async (
   type: NotificationType,
-  message: string
+  message: string,
+  orphanageId?: number
 ) => {
   const { error } = await supabase
     .from('notifications')
-    .insert({ type, message })
+    .insert({ type, message, orphanage_id: orphanageId || null })
 
   if (error) console.error('Notification error:', error)
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/context/AuthContext'
 
 type Space = {
   id: number
@@ -32,6 +33,7 @@ export default function SurveyOptionSettings() {
   const [questions, setQuestions] = useState<SurveyQuestion[]>([])
   const [optionsByQuestion, setOptionsByQuestion] = useState<Record<number, SurveyQuestionOption[]>>({})
   const [loading, setLoading] = useState(true)
+  const { admin, isLoading } = useAuth()
 
   // Question modal
   const [showQuestionModal, setShowQuestionModal] = useState(false)
@@ -51,11 +53,13 @@ export default function SurveyOptionSettings() {
 
   // Fetch spaces
   useEffect(() => {
+     if (isLoading || !admin?.orphanage_id) return
     const fetchSpaces = async () => {
       const { data } = await supabase
         .from('spaces')
         .select('id, space_name')
         .eq('is_active', true)
+        .eq('orphanage_id', admin.orphanage_id)  
         .order('id')
       if (data) {
         setSpaces(data)
@@ -63,7 +67,7 @@ export default function SurveyOptionSettings() {
       }
     }
     fetchSpaces()
-  }, [])
+  }, [admin?.orphanage_id, isLoading])
 
   // Fetch questions when space or survey type changes
   useEffect(() => {
@@ -140,6 +144,7 @@ export default function SurveyOptionSettings() {
           survey_type: activeSurveyType,
           order_index: questions.length + 1,
           is_active: true,
+          orphanage_id: admin?.orphanage_id,
         })
     }
 
@@ -209,6 +214,7 @@ export default function SurveyOptionSettings() {
           question_id: activeQuestionId,
           label: optionForm.label,
           order_index: currentOptions.length + 1,
+          orphanage_id: admin?.orphanage_id,
         })
     }
 
@@ -263,143 +269,105 @@ export default function SurveyOptionSettings() {
         ))}
       </div>
 
-      {/* Pre/Post Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveSurveyType('pre')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeSurveyType === 'pre'
-              ? 'bg-[#FF6347] text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Pre Survey
-        </button>
-        <button
-          onClick={() => setActiveSurveyType('post')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeSurveyType === 'post'
-              ? 'bg-[#FF6347] text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          Post Survey
-        </button>
-      </div>
-
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">
-          {spaces.find(s => s.id === activeSpace)?.space_name} — {activeSurveyType === 'pre' ? 'Pre' : 'Post'} Survey Questions
-        </h2>
-        <button
-          onClick={openAddQuestion}
-          className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
-        >
-           Add Question
-        </button>
-      </div>
-
-      {/* Questions List */}
-      {loading ? (
-        <p className="text-gray-400 text-center py-8">Loading...</p>
-      ) : questions.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">No questions yet</p>
-      ) : (
-        <div className="space-y-4">
-          {questions.map((question, qIndex) => (
-            <div key={question.id} className={`border rounded-xl p-4 ${!question.is_active ? 'opacity-50' : ''}`}>
-
-              {/* Question Header */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-400">Q{qIndex + 1}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getAnswerTypeBadge(question.answer_type)}`}>
-                      {getAnswerTypeLabel(question.answer_type)}
-                    </span>
-                    {!question.is_active && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">Inactive</span>
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-gray-800">{question.question_text}</p>
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => handleToggleQuestion(question)}
-                    className={`text-xs px-2 py-1 rounded ${
-                      question.is_active
-                        ? 'text-yellow-600 hover:text-yellow-800'
-                        : 'text-green-600 hover:text-green-800'
-                    }`}
-                  >
-                    {question.is_active ? 'Disable' : 'Enable'}
-                  </button>
-                  <button
-                    onClick={() => openEditQuestion(question)}
-                    className="text-blue-600 hover:text-blue-800 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteQuestion(question)}
-                    className="text-red-500 hover:text-red-700 text-xs"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              {/* Options (for radio/checkbox) */}
-              {question.answer_type !== 'open_ended' && (
-                <div className="ml-4">
-                  <div className="space-y-1 mb-2">
-                    {(optionsByQuestion[question.id] || []).map(option => (
-                      <div key={option.id} className="flex items-center justify-between bg-gray-50 rounded px-3 py-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-300 text-xs">
-                            {question.answer_type === 'radio' ? '○' : '□'}
-                          </span>
-                          <span className="text-sm text-gray-700">{option.label}</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => openEditOption(option)}
-                            className="text-blue-500 hover:text-blue-700 text-xs"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteOption(option)}
-                            className="text-red-400 hover:text-red-600 text-xs"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => openAddOption(question.id)}
-                    className="text-[#FF6347] hover:text-[#414141] text-xs font-medium"
-                  >
-                     Add Option
-                  </button>
-                </div>
-              )}
-
-              {/* Open ended preview */}
-              {question.answer_type === 'open_ended' && (
-                <div className="ml-4">
-                  <div className="bg-gray-50 rounded px-3 py-2 text-sm text-gray-400 italic">
-                    Text input field
-                  </div>
-                </div>
-              )}
-
-            </div>
-          ))}
+      {/* ← Add this empty state check */}
+      {!loading && spaces.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-lg mb-2">No components yet</p>
+          <p className="text-gray-300 text-sm">Go to the Components tab to add a space first.</p>
         </div>
+      ) : (
+        <>
+          {/* Pre/Post Tabs */}
+          <div className="flex gap-2 mb-6">
+            <button onClick={() => setActiveSurveyType('pre')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeSurveyType === 'pre' ? 'bg-[#FF6347] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              Pre Survey
+            </button>
+            <button onClick={() => setActiveSurveyType('post')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeSurveyType === 'post' ? 'bg-[#FF6347] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              Post Survey
+            </button>
+          </div>
+
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              {spaces.find(s => s.id === activeSpace)?.space_name} — {activeSurveyType === 'pre' ? 'Pre' : 'Post'} Survey Questions
+            </h2>
+            <button onClick={openAddQuestion}
+              className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors">
+              Add Question
+            </button>
+          </div>
+
+          {/* Questions List */}
+          {loading ? (
+            <p className="text-gray-400 text-center py-8">Loading...</p>
+          ) : questions.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No questions yet</p>
+          ) : (
+            <div className="space-y-4">
+              {questions.map((question, qIndex) => (
+                <div key={question.id} className={`border rounded-xl p-4 ${!question.is_active ? 'opacity-50' : ''}`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-gray-400">Q{qIndex + 1}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getAnswerTypeBadge(question.answer_type)}`}>
+                          {getAnswerTypeLabel(question.answer_type)}
+                        </span>
+                        {!question.is_active && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">Inactive</span>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-gray-800">{question.question_text}</p>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <button onClick={() => handleToggleQuestion(question)}
+                        className={`text-xs px-2 py-1 rounded ${question.is_active ? 'text-yellow-600 hover:text-yellow-800' : 'text-green-600 hover:text-green-800'}`}>
+                        {question.is_active ? 'Disable' : 'Enable'}
+                      </button>
+                      <button onClick={() => openEditQuestion(question)} className="text-blue-600 hover:text-blue-800 text-xs">Edit</button>
+                      <button onClick={() => handleDeleteQuestion(question)} className="text-red-500 hover:text-red-700 text-xs">Delete</button>
+                    </div>
+                  </div>
+
+                  {question.answer_type !== 'open_ended' && (
+                    <div className="ml-4">
+                      <div className="space-y-1 mb-2">
+                        {(optionsByQuestion[question.id] || []).map(option => (
+                          <div key={option.id} className="flex items-center justify-between bg-gray-50 rounded px-3 py-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-300 text-xs">{question.answer_type === 'radio' ? '○' : '□'}</span>
+                              <span className="text-sm text-gray-700">{option.label}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button onClick={() => openEditOption(option)} className="text-blue-500 hover:text-blue-700 text-xs">Edit</button>
+                              <button onClick={() => handleDeleteOption(option)} className="text-red-400 hover:text-red-600 text-xs">Delete</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => openAddOption(question.id)} className="text-[#FF6347] hover:text-[#414141] text-xs font-medium">
+                        Add Option
+                      </button>
+                    </div>
+                  )}
+
+                  {question.answer_type === 'open_ended' && (
+                    <div className="ml-4">
+                      <div className="bg-gray-50 rounded px-3 py-2 text-sm text-gray-400 italic">Text input field</div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Question Modal */}
@@ -412,8 +380,7 @@ export default function SurveyOptionSettings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
-                <textarea
-                  value={questionForm.question_text}
+                <textarea value={questionForm.question_text}
                   onChange={e => setQuestionForm({ ...questionForm, question_text: e.target.value })}
                   rows={3}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-sm"
@@ -422,11 +389,9 @@ export default function SurveyOptionSettings() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Answer Type</label>
-                <select
-                  value={questionForm.answer_type}
+                <select value={questionForm.answer_type}
                   onChange={e => setQuestionForm({ ...questionForm, answer_type: e.target.value as any })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-sm"
-                >
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-sm">
                   <option value="radio">Single Choice (Radio)</option>
                   <option value="checkbox">Multiple Choice (Checkbox)</option>
                   <option value="open_ended">Open Ended (Text)</option>
@@ -434,17 +399,12 @@ export default function SurveyOptionSettings() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSaveQuestion}
-                disabled={savingQuestion}
-                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors"
-              >
+              <button onClick={handleSaveQuestion} disabled={savingQuestion}
+                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors">
                 {savingQuestion ? 'Saving...' : 'Save'}
               </button>
-              <button
-                onClick={() => setShowQuestionModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
-              >
+              <button onClick={() => setShowQuestionModal(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
                 Cancel
               </button>
             </div>
@@ -461,26 +421,19 @@ export default function SurveyOptionSettings() {
             </h3>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Option Label</label>
-              <input
-                type="text"
-                value={optionForm.label}
+              <input type="text" value={optionForm.label}
                 onChange={e => setOptionForm({ label: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 placeholder="e.g. Drawing"
               />
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSaveOption}
-                disabled={savingOption}
-                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors"
-              >
+              <button onClick={handleSaveOption} disabled={savingOption}
+                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors">
                 {savingOption ? 'Saving...' : 'Save'}
               </button>
-              <button
-                onClick={() => setShowOptionModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
-              >
+              <button onClick={() => setShowOptionModal(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
                 Cancel
               </button>
             </div>

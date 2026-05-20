@@ -1,13 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
+
+type Orphanage = {
+  id: number
+  name: string
+  code: string
+}
 
 export default function AdminLoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const [orphanages, setOrphanages] = useState<Orphanage[]>([])
   const [form, setForm] = useState({
+    orphanage_id: '',
     username: '',
     password: ''
   })
@@ -15,64 +24,77 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
+  useEffect(() => {
+    const fetchOrphanages = async () => {
+      const { data } = await supabase
+        .from('orphanages')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name')
+      if (data) setOrphanages(data)
+    }
+    fetchOrphanages()
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.orphanage_id) {
+      setError('Please select a Create Hub.')
+      return
+    }
     setLoading(true)
     setError('')
 
-    const success = await login(form.username, form.password)
+    const success = await login(
+      form.username,
+      form.password,
+      parseInt(form.orphanage_id)
+    )
 
     if (success) {
       router.push('/admin/dashboard')
     } else {
-      setError('Invalid username or password')
-      // router.push('/admin/dashboard')
+      setError('Invalid username or password.')
     }
 
     setLoading(false)
-
-    // try {
-    //   const response = await fetch('/api/auth/login', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(form)
-    //   })
-
-    //   const data = await response.json()
-
-    //   if (!response.ok) {
-    //     setError(data.message || 'Invalid username or password')
-    //     return
-    //   }
-
-    //   router.push('/admin/users')
-
-    // } catch (err) {
-    //   setError('Something went wrong. Please try again.')
-    // } finally {
-    //   setLoading(false)
-    // }
   }
 
   return (
     <div className="min-h-screen bg-[#faf2f0] flex items-center justify-center p-8">
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
 
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Admin Login</h1>
-          {/* <p className="text-gray-400 text-sm mt-1">Admin Login</p> */}
         </div>
 
-        {/* Error message */}
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Orphanage Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">
+              Orphanage
+            </label>
+            <select
+              required
+              value={form.orphanage_id}
+              onChange={e => setForm({ ...form, orphanage_id: e.target.value })}
+              className="w-full border border-[#76bcad] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#76bcad]"
+            >
+              <option value="">Select a Create Hub</option>
+              {orphanages.map(o => (
+                <option key={o.id} value={o.id}>
+                  {o.name} ({o.code})
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Username */}
           <div>
@@ -83,7 +105,7 @@ export default function AdminLoginPage() {
               type="text"
               required
               value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })}
+              onChange={e => setForm({ ...form, username: e.target.value.replace(/\s/g, '') })}
               className="w-full border border-[#76bcad] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#76bcad]"
               placeholder="Enter username"
             />
@@ -94,38 +116,29 @@ export default function AdminLoginPage() {
             <label className="block text-sm font-medium text-black mb-1">
               Password
             </label>
-            {/* <input
-              type="password"
-              required
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 text-black focus:ring-blue-500"
-              placeholder="Enter password"
-            /> */}
             <div className="relative">
-                <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    className="w-full border border-[#76bcad] rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#76bcad] text-black"
-                    placeholder="Enter password"
-                />
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black"
-                >
-                    {showPassword ? 'Hide' : 'Show'}
-                </button>
-                </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                className="w-full border border-[#76bcad] rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#76bcad] text-black"
+                placeholder="Enter password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#cee4b8] text-[#414141] py-2 rounded-lg hover:bg-[#76bcad] hover:text-[#ffffff] disabled:opacity-50 disabled:cursor-not-allowed font-l mt-2"
+            className="w-full bg-[#cee4b8] text-[#414141] py-2 rounded-lg hover:bg-[#76bcad] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed font-medium mt-2"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>

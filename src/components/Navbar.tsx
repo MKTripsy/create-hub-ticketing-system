@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import AdminGuard from './AdminGuard'
 import Image from 'next/image'
@@ -11,19 +11,17 @@ import CFLogo from '@/app/images/CFLogoBOnyx.png'
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
   const { admin, logout } = useAuth()
 
-  // Don't show hamburger if not logged in
   if (!admin) return null
 
   const navLinks = [
-    { href: '/admin/dashboard', label: 'Dashboard'},
-    { href: '/admin/schedules', label: 'Schedules'},
-    { href: '/admin/users', label: 'Users'},
-    { href: '/admin/attendance', label: 'Attendance'},
-    { href: '/scan', label: 'Scan'},
-    { href: '/admin/settings', label: 'Settings'}
+    { href: '/admin/dashboard', label: 'Dashboard' },
+    { href: '/admin/schedules', label: 'Schedules' },
+    { href: '/admin/users', label: 'Users' },
+    { href: '/admin/attendance', label: 'Attendance' },
+    { href: '/scan', label: 'Scan' },
+    { href: '/admin/settings', label: 'Settings' },
   ]
 
   const handleLogout = () => {
@@ -33,7 +31,7 @@ export default function Navbar() {
 
   return (
     <AdminGuard>
-      {/* Hamburger button — top left corner */}
+      {/* Hamburger button */}
       <button
         onClick={() => setSidebarOpen(true)}
         className="fixed top-4 left-4 z-20 bg-white shadow rounded-lg p-2 hover:bg-gray-100"
@@ -43,7 +41,7 @@ export default function Navbar() {
         <div className="w-5 h-0.5 bg-gray-700" />
       </button>
 
-      {/* Overlay — dims background when sidebar is open */}
+      {/* Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30"
@@ -57,16 +55,6 @@ export default function Navbar() {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`} style={{ backgroundColor: '#FF6347' }}>
 
-        {/* Sidebar header */}
-        {/* <div className="flex items-center justify-between px-6 py-5 border-b border-[#FF6347]">
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
-          >
-            ✕
-          </button>
-        </div> */}
-
         {/* Admin info */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
           <button
@@ -75,9 +63,24 @@ export default function Navbar() {
           >
             ✕
           </button>
-          <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto"></Image>
-          <p className="text-xs text-black mb-1">Logged in as</p>
-          <p className="text-xl font-bold border-[#FF6347]">
+          <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto" />
+
+          {/* Orphanage name */}
+          <p className="text-xs text-black mt-2 mb-0.5">
+            {admin.orphanage_name || 'All Orphanages'}
+          </p>
+
+          {/* Role badge */}
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            admin.role === 'superadmin'
+              ? 'bg-yellow-100 text-yellow-800'
+              : 'bg-white text-gray-700'
+          }`}>
+            {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
+          </span>
+
+          <p className="text-xs text-black mt-2 mb-1">Logged in as</p>
+          <p className="text-xl font-bold">
             {admin.first_name} {admin.last_name}
           </p>
         </div>
@@ -87,7 +90,7 @@ export default function Navbar() {
           {navLinks.map(link => (
             <Link
               key={link.href}
-              href={link.href}
+              href={link.href as any}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 pathname === link.href
@@ -95,7 +98,6 @@ export default function Navbar() {
                   : 'text-white hover:bg-[#CEE4B8] hover:text-black'
               }`}
             >
-              <span></span>
               {link.label}
             </Link>
           ))}
@@ -107,11 +109,9 @@ export default function Navbar() {
             onClick={handleLogout}
             className="flex items-center bg-[#414141] gap-3 px-4 py-3 rounded-lg text-sm font-medium text-white hover:bg-red-50 hover:text-[#FF0000] w-full"
           >
-            <span></span>
             Logout
           </button>
         </div>
-
       </div>
     </AdminGuard>
   )

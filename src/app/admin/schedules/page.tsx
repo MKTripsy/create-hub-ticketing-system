@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import AdminGuard from '@/components/AdminGuard'
+import { useAuth } from '@/context/AuthContext'
 
 type Space = {
   id: number
@@ -32,6 +33,7 @@ export default function SchedulesPage() {
   const [loading, setLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState<string>('All')
   const [spaceDays, setSpaceDays] = useState<string[]>([])
+  const { admin } = useAuth()
 
   const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -43,6 +45,7 @@ export default function SchedulesPage() {
         .from('spaces')
         .select('id, space_name')
         .eq('is_active', true)
+        .eq('orphanage_id', admin?.orphanage_id)
 
       if (data) {
         setSpaces(data)
@@ -51,7 +54,7 @@ export default function SchedulesPage() {
       setLoading(false)
     }
     fetchData()
-  }, [])
+  }, [admin?.orphanage_id])
 
   // Fetch schedule data when active space changes
   useEffect(() => {

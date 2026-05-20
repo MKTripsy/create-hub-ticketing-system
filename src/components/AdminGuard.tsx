@@ -4,7 +4,12 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
-export default function AdminGuard({ children }: { children: React.ReactNode }) {
+type Props = {
+  children: React.ReactNode
+  requireSuperadmin?: boolean
+}
+
+export default function AdminGuard({ children, requireSuperadmin = false }: Props) {
   const { admin, isLoading } = useAuth()
   const router = useRouter()
 
@@ -12,7 +17,10 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     if (!isLoading && !admin) {
       router.push('/admin/login')
     }
-  }, [admin, isLoading, router])
+    if (!isLoading && admin && requireSuperadmin && admin.role !== 'superadmin') {
+      router.push('/admin/dashboard')
+    }
+  }, [admin, isLoading, router, requireSuperadmin])
 
   if (isLoading) {
     return (
@@ -23,6 +31,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   }
 
   if (!admin) return null
+  if (requireSuperadmin && admin.role !== 'superadmin') return null
 
   return <>{children}</>
 }

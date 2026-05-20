@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/context/AuthContext'
 
 type Space = {
   id: number
@@ -26,22 +27,44 @@ export default function TimeSlotSettings() {
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null)
   const [form, setForm] = useState({ start_time: '', end_time: '' })
   const [saving, setSaving] = useState(false)
+  const { admin, isLoading } = useAuth()
+  console.log('Auth state:', { admin, isLoading })
 
   // Fetch spaces on mount
+  // useEffect(() => {
+  //   if (isLoading || !admin?.orphanage_id) return
+  //   const fetchSpaces = async () => {
+  //     const { data } = await supabase
+  //       .from('spaces')
+  //       .select('id, space_name')
+  //       .eq('is_active', true)
+  //       .eq('orphanage_id', admin?.orphanage_id)
+  //       .order('id')
+  //     if (data) {
+  //       setSpaces(data)
+  //       if (data.length > 0) setActiveSpace(data[0].id)
+  //     }
+  //   }
+  //   fetchSpaces()
+  // }, [admin?.orphanage_id, isLoading])
   useEffect(() => {
+    console.log('Spaces useEffect fired:', { isLoading, orphanage_id: admin?.orphanage_id })
+    if (isLoading || !admin?.orphanage_id) return
     const fetchSpaces = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('spaces')
         .select('id, space_name')
         .eq('is_active', true)
+        .eq('orphanage_id', admin.orphanage_id)
         .order('id')
+      console.log('Spaces data:', data, 'Error:', error)
       if (data) {
         setSpaces(data)
         if (data.length > 0) setActiveSpace(data[0].id)
       }
     }
     fetchSpaces()
-  }, [])
+  }, [admin?.orphanage_id, isLoading])
 
   // Fetch time slots when active space changes
   useEffect(() => {
@@ -137,7 +160,7 @@ export default function TimeSlotSettings() {
       // Insert new time slot
       const { data: newSlot } = await supabase
         .from('time_slots')
-        .insert({ ...form, label, is_active: true, space_id: activeSpace })
+        .insert({ ...form, label, is_active: true, space_id: activeSpace, orphanage_id: admin?.orphanage_id, })
         .select()
         .single()
 
@@ -148,7 +171,8 @@ export default function TimeSlotSettings() {
           .insert({
             space_id: activeSpace,
             time_slot_id: newSlot.id,
-            max_users: 8 // default limit — admin can change in space settings
+            max_users: 8, // default limit — admin can change in space settings
+            orphanage_id: admin?.orphanage_id,
           })
       }
     }
@@ -201,58 +225,56 @@ export default function TimeSlotSettings() {
         ))}
       </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Time Slots — {spaces.find(s => s.id === activeSpace)?.space_name}
-        </h2>
-        <button
-          onClick={openAdd}
-          className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
-        >
-           Add Slot
-        </button>
-      </div>
-
-      {loading ? (
-        <p className="text-gray-400">Loading...</p>
-      ) : slots.length === 0 ? (
-        <p className="text-gray-400 text-center py-8">
-          No time slots for this space yet
-        </p>
+      {/* Empty state check */}
+      {!loading && spaces.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-lg mb-2">No components yet</p>
+          <p className="text-gray-300 text-sm">Go to the Components tab to add a component first.</p>
+        </div>
       ) : (
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {slots.map(slot => (
-              <tr key={slot.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
-                <td className="px-4 py-3 flex gap-3">
-                  <button
-                    onClick={() => openEdit(slot)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(slot)}
-                    className="text-red-500 hover:text-red-700 text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Time Slots — {spaces.find(s => s.id === activeSpace)?.space_name}
+            </h2>
+            <button
+              onClick={openAdd}
+              className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors"
+            >
+              Add Slot
+            </button>
+          </div>
+
+          {loading ? (
+            <p className="text-gray-400">Loading...</p>
+          ) : slots.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No time slots for this space yet</p>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {slots.map(slot => (
+                  <tr key={slot.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
+                    <td className="px-4 py-3 flex gap-3">
+                      <button onClick={() => openEdit(slot)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                      <button onClick={() => handleDelete(slot)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
 
       {/* Modal */}
@@ -265,40 +287,29 @@ export default function TimeSlotSettings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                <input
-                  type="time"
-                  value={form.start_time}
+                <input type="time" value={form.start_time}
                   onChange={e => setForm({ ...form, start_time: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                <input
-                  type="time"
-                  value={form.end_time}
+                <input type="time" value={form.end_time}
                   onChange={e => setForm({ ...form, end_time: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
               {form.start_time && form.end_time && (
-                <p className="text-sm text-[#FF6347]">
-                  Label: {generateLabel(form.start_time, form.end_time)}
-                </p>
+                <p className="text-sm text-[#FF6347]">Label: {generateLabel(form.start_time, form.end_time)}</p>
               )}
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSave}
-                disabled={saving || !form.start_time || !form.end_time}
-                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors"
-              >
+              <button onClick={handleSave} disabled={saving || !form.start_time || !form.end_time}
+                className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium disabled:opacity-50 transition-colors">
                 {saving ? 'Saving...' : 'Save'}
               </button>
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
-              >
+              <button onClick={() => setShowModal(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
                 Cancel
               </button>
             </div>
@@ -308,235 +319,3 @@ export default function TimeSlotSettings() {
     </div>
   )
 }
-// 'use client'
-
-// import { useState, useEffect } from 'react'
-// import { supabase } from '@/lib/supabase'
-
-// type TimeSlot = {
-//   id: number
-//   label: string
-//   start_time: string
-//   end_time: string
-//   is_active: boolean
-// }
-
-// export default function TimeSlotSettings() {
-//   const [slots, setSlots] = useState<TimeSlot[]>([])
-//   const [loading, setLoading] = useState(true)
-//   const [showModal, setShowModal] = useState(false)
-//   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null)
-//   const [form, setForm] = useState({ start_time: '', end_time: '' })
-//   const [saving, setSaving] = useState(false)
-
-//   const fetchSlots = async () => {
-//     const { data } = await supabase
-//       .from('time_slots')
-//       .select('*')
-//       .order('start_time')
-//     if (data) setSlots(data)
-//     setLoading(false)
-//   }
-
-//   useEffect(() => { fetchSlots() }, [])
-
-//   // Auto generate label from times
-//   const generateLabel = (start: string, end: string) => {
-//     const formatTime = (time: string) => {
-//       const [hours, minutes] = time.split(':')
-//       const h = parseInt(hours)
-//       const ampm = h >= 12 ? 'PM' : 'AM'
-//       const hour = h % 12 || 12
-//       return `${hour}${minutes !== '00' ? `:${minutes}` : ''}${ampm}`
-//     }
-//     return `${formatTime(start)} - ${formatTime(end)}`
-//   }
-
-//   const openAdd = () => {
-//     setEditingSlot(null)
-//     setForm({ start_time: '', end_time: '' })
-//     setShowModal(true)
-//   }
-
-//   const openEdit = (slot: TimeSlot) => {
-//     setEditingSlot(slot)
-//     setForm({ start_time: slot.start_time, end_time: slot.end_time })
-//     setShowModal(true)
-//   }
-
-//   const handleSave = async () => {
-//     setSaving(true)
-//     const label = generateLabel(form.start_time, form.end_time)
-//     if (editingSlot) {
-//       await supabase
-//         .from('time_slots')
-//         .update({ ...form, label })
-//         .eq('id', editingSlot.id)
-//     } else {
-//       await supabase
-//         .from('time_slots')
-//         .insert({ ...form, label, is_active: true })
-//     }
-//     await fetchSlots()
-//     setShowModal(false)
-//     setSaving(false)
-//   }
-
-//   // const handleDelete = async (slot: TimeSlot) => {
-//   //   if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
-//   //   await supabase.from('time_slots').delete().eq('id', slot.id)
-//   //   await fetchSlots()
-//   // }
-
-//   const handleDelete = async (slot: TimeSlot) => {
-//     if (!confirm(`Are you sure you want to delete "${slot.label}"?`)) return
-
-//     console.log('Deleting slot:', slot.id) // ← add
-
-//     // Step 1 — Delete from space_timeslot_limits
-//     const { error: limitsError } = await supabase
-//       .from('space_timeslot_limits')
-//       .delete()
-//       .eq('time_slot_id', slot.id)
-
-//     console.log('Limits delete error:', limitsError) // ← add
-
-//     if (limitsError) {
-//       alert('Something went wrong at limits. Please try again.')
-//       return
-//     }
-
-//     // Step 2 — Delete from availability
-//     const { error: availError } = await supabase
-//       .from('availability')
-//       .delete()
-//       .eq('time_slot_id', slot.id)
-
-//     console.log('Availability delete error:', availError) // ← add
-
-//     if (availError) {
-//       alert('Something went wrong at availability. Please try again.')
-//       return
-//     }
-
-//     // Step 3 — Delete the time slot
-//     const { error: slotError } = await supabase
-//       .from('time_slots')
-//       .delete()
-//       .eq('id', slot.id)
-
-//     console.log('Slot delete error:', slotError) // ← add
-
-//     if (slotError) {
-//       alert('Something went wrong at slot. Please try again.')
-//       return
-//     }
-
-//     await fetchSlots()
-//   }
-
-//   if (loading) return <p className="text-gray-400">Loading...</p>
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-center mb-4">
-//         <h2 className="text-lg font-semibold text-gray-800">Time Slots</h2>
-//         <button
-//           onClick={openAdd}
-//           className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg text-sm font-medium"
-//         >
-//           Add Slot
-//         </button>
-//       </div>
-
-//       {slots.length === 0 ? (
-//         <p className="text-gray-400 text-center py-8">No time slots yet</p>
-//       ) : (
-//         <table className="w-full">
-//           <thead className="bg-gray-50">
-//             <tr>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
-//               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
-//             </tr>
-//           </thead>
-//           <tbody className="divide-y divide-gray-100">
-//             {slots.map(slot => (
-//               <tr key={slot.id} className="hover:bg-gray-50">
-//                 <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
-//                 <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
-//                 <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
-//                 <td className="px-4 py-3 flex gap-3">
-//                   <button
-//                     onClick={() => openEdit(slot)}
-//                     className="text-blue-600 hover:text-blue-800 text-sm"
-//                   >
-//                     Edit
-//                   </button>
-//                   <button
-//                     onClick={() => handleDelete(slot)}
-//                     className="text-red-500 hover:text-red-700 text-sm"
-//                   >
-//                     Delete
-//                   </button>
-//                 </td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       )}
-
-//       {/* Modal */}
-//       {showModal && (
-//         <div className="bg-[#FAF2F0] fixed inset-0 flex items-center justify-center z-50">
-//           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
-//             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-//               {editingSlot ? 'Edit Time Slot' : 'Add Time Slot'}
-//             </h3>
-//             <div className="space-y-4">
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-//                 <input
-//                   type="time"
-//                   value={form.start_time}
-//                   onChange={e => setForm({ ...form, start_time: e.target.value })}
-//                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-//                 <input
-//                   type="time"
-//                   value={form.end_time}
-//                   onChange={e => setForm({ ...form, end_time: e.target.value })}
-//                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 />
-//               </div>
-//               {form.start_time && form.end_time && (
-//                 <p className="text-sm text-black">
-//                   Label: {generateLabel(form.start_time, form.end_time)}
-//                 </p>
-//               )}
-//             </div>
-//             <div className="flex gap-3 mt-6">
-//               <button
-//                 onClick={handleSave}
-//                 disabled={saving || !form.start_time || !form.end_time}
-//                 className="flex-1 bg-[#CEE4B8] text-black hover:bg-[#414141] hover:text-white py-2 rounded-lg font-medium disabled:opacity-50"
-//               >
-//                 {saving ? 'Saving...' : 'Save'}
-//               </button>
-//               <button
-//                 onClick={() => setShowModal(false)}
-//                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg"
-//               >
-//                 Cancel
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }

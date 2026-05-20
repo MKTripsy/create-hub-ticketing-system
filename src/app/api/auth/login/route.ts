@@ -4,15 +4,32 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json()
+    const { username, password, orphanageId } = await request.json()
 
-    const { data: admin, error } = await supabase
-      .from('admin')
-      .select('*')
+    // Fetch admin from new admins table
+    let query = supabase
+      .from('admins')
+      .select('*, orphanages(id, name, code)')
       .eq('username', username)
-      .single()
 
-    if (error || !admin) {
+    // Superadmin can log in regardless of orphanage selected
+    // Regular admin must belong to the selected orphanage
+    const { data: admins, error } = await query
+
+    if (error || !admins || admins.length === 0) {
+      return NextResponse.json(
+        { message: 'Invalid username or password' },
+        { status: 401 }
+      )
+    }
+
+    // Find matching admin
+    const admin = admins.find(a => {
+      if (a.role === 'superadmin') return true
+      return a.orphanage_id === orphanageId
+    })
+
+    if (!admin) {
       return NextResponse.json(
         { message: 'Invalid username or password' },
         { status: 401 }
@@ -20,12 +37,35 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordMatch = await bcrypt.compare(password, admin.password_hash)
-
     if (!passwordMatch) {
       return NextResponse.json(
         { message: 'Invalid username or password' },
         { status: 401 }
       )
+    }
+
+    // For superadmin, use the selected orphanage
+    // For regular admin, use their assigned orphanage
+    let orphanageName = null
+    let orphanageCode = null
+    let effectiveOrphanageId = admin.orphanage_id
+
+    if (admin.role === 'superadmin') {
+      // Fetch the selected orphanage details
+      const { data: orphanage } = await supabase
+        .from('orphanages')
+        .select('id, name, code')
+        .eq('id', orphanageId)
+        .single()
+
+      if (orphanage) {
+        orphanageName = orphanage.name
+        orphanageCode = orphanage.code
+        effectiveOrphanageId = orphanage.id
+      }
+    } else {
+      orphanageName = (admin.orphanages as any)?.name || null
+      orphanageCode = (admin.orphanages as any)?.code || null
     }
 
     return NextResponse.json({
@@ -35,6 +75,10 @@ export async function POST(request: NextRequest) {
         username: admin.username,
         first_name: admin.first_name,
         last_name: admin.last_name,
+        role: admin.role,
+        orphanage_id: effectiveOrphanageId,
+        orphanage_name: orphanageName,
+        orphanage_code: orphanageCode,
       }
     })
 
@@ -45,75 +89,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-
-
-//march 31 10:40
-// import { NextRequest, NextResponse } from 'next/server'
-// import { supabase } from '@/lib/supabase'
-// import bcrypt from 'bcryptjs'
-// import { cookies } from 'next/headers'
-
-// export async function POST(request: NextRequest) {
-//   try {
-//     const { username, password } = await request.json()
-
-//     console.log('Login attempt for username:', username)
-
-//     // Find admin by username
-//     const { data: admin, error } = await supabase
-//       .from('admin')
-//       .select('*')
-//       .eq('username', username)
-//       .single()
-
-//       console.log('Admin found:', admin ? 'yes' : 'no') 
-//       console.log('DB error:', error) 
-
-
-//     if (error || !admin) {
-//       return NextResponse.json(
-//         { message: 'Invalid username or password' },
-//         { status: 401 }
-//       )
-//     }
-
-//     // Check password
-//     const passwordMatch = await bcrypt.compare(password, admin.password_hash)
-
-//     console.log('Password match:', passwordMatch)
-
-//     if (!passwordMatch) {
-//       return NextResponse.json(
-//         { message: 'Invalid username or password' },
-//         { status: 401 }
-//       )
-//     }
-
-//     // Set session cookie
-//     const cookieStore = await cookies()
-//     cookieStore.set('admin_session', JSON.stringify({
-//       id: admin.id,
-//       username: admin.username,
-//       first_name: admin.first_name,
-//       last_name: admin.last_name,
-//       isLoggedIn: true
-//     }), {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'lax',
-//       maxAge: 60 * 60 * 8 // 8 hours
-//     })
-
-//     console.log('Cookie set successfully')
-
-//     return NextResponse.json({ message: 'Login successful' })
-
-//   } catch (err) {
-//     console.error('Login error:', err)
-//     return NextResponse.json(
-//       { message: 'Something went wrong' },
-//       { status: 500 }
-//     )
-//   }
-// }

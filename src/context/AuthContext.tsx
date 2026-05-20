@@ -8,11 +8,15 @@ type Admin = {
   username: string
   first_name: string
   last_name: string
+  role: 'superadmin' | 'admin'
+  orphanage_id: number | null
+  orphanage_name: string | null
+  orphanage_code: string | null
 }
 
 type AuthContextType = {
   admin: Admin | null
-  login: (username: string, password: string) => Promise<boolean>
+  login: (username: string, password: string, orphanageId: number) => Promise<boolean>
   logout: () => void
   isLoading: boolean
 }
@@ -24,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Check localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem('admin')
     if (stored) {
@@ -33,19 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string,
+    orphanageId: number
+  ): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password, orphanageId })
       })
 
       const data = await response.json()
-
       if (!response.ok) return false
 
-      // Store in localStorage
       localStorage.setItem('admin', JSON.stringify(data.admin))
       setAdmin(data.admin)
       return true
