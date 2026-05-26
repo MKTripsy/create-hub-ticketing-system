@@ -41,7 +41,7 @@ const sortDays = (days: string[]) => {
 export default function EditUserPage() {
   const { id } = useParams()
   const router = useRouter()
-  const { admin } = useAuth()
+  const { admin, isLoading } = useAuth()
   const cleanId = Array.isArray(id) ? id[0] : id
   const numericId = parseInt(cleanId as string)
 
@@ -118,6 +118,7 @@ export default function EditUserPage() {
 
   // Fetch user data
   useEffect(() => {
+    if (isLoading || !admin?.orphanage_id) return
     const fetchData = async () => {
       const [userRes, spacesRes, availRes, userSpacesRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', numericId).single(),
@@ -174,7 +175,7 @@ export default function EditUserPage() {
       setLoading(false)
     }
     fetchData()
-  }, [numericId])
+  }, [numericId, admin?.orphanage_id, isLoading])
 
   // Fetch primary space data when primary_space_id changes
   useEffect(() => {
