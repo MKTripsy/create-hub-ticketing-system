@@ -13,6 +13,7 @@ import PreSurveyScreen from '@/components/scan/PreSurveyScreen'
 import ClockedInScreen from '@/components/scan/ClockedInScreen'
 import ClockedOutScreen from '@/components/scan/ClockedOutScreen'
 import { createNotification } from '@/lib/notifications'
+import KioskExit from '@/components/KioskExit'
 
 export default function ScanPage() {
   const [scanState, setScanState] = useState<ScanState>('idle')
@@ -25,6 +26,13 @@ export default function ScanPage() {
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[]>([])
   const [surveyAnswers, setSurveyAnswers] = useState<Record<number, string | string[]>>({})
+  const currentSessionRef = useRef(currentSession)
+  const newSessionIdRef = useRef(newSessionId)
+  const currentSpaceIdRef = useRef(currentSpaceId)
+
+  useEffect(() => { currentSessionRef.current = currentSession }, [currentSession])
+  useEffect(() => { newSessionIdRef.current = newSessionId }, [newSessionId])
+  useEffect(() => { currentSpaceIdRef.current = currentSpaceId }, [currentSpaceId])
 
   const getCurrentTimeSlotForSpace = async (spaceId: number): Promise<TimeSlot | null> => {
     const now = new Date()
@@ -179,9 +187,9 @@ export default function ScanPage() {
   const handleClockIn = async () => {
     if (!currentUser || !currentTimeSlot || !currentSpaceId) return
 
-      console.log('handleClockIn called')
-      console.log('surveyQuestions:', surveyQuestions)
-      console.log('surveyAnswers:', surveyAnswers)
+    console.log('handleClockIn called')
+    console.log('surveyQuestions:', surveyQuestions)
+    console.log('surveyAnswers:', surveyAnswers)
 
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -211,7 +219,6 @@ export default function ScanPage() {
     if (error || !session) { alert('Something went wrong.'); return }
     setNewSessionId(session.id)
 
-    // Save survey responses
     for (const question of surveyQuestions) {
       const answer = surveyAnswers[question.id]
       if (!answer || (Array.isArray(answer) && answer.length === 0)) continue
@@ -246,13 +253,19 @@ export default function ScanPage() {
 
     setSurveyAnswers({})
     setScanState('clocked_in')
+
+    // Tell Electron the user clocked in and when their slot ends
+    if (typeof window !== 'undefined' && (window as any).electronAPI) {
+      const slotEnd = currentTimeSlot?.end_time?.slice(0, 5)  // ← "10:00:00" → "10:00"
+      const slotEndTime = new Date(`${today}T${slotEnd}:00`).toISOString()
+      ;(window as any).electronAPI.userClockedIn(slotEndTime)
+    }
   }
 
   const handleClockOut = async () => {
     const sessionId = currentSession?.id || newSessionId
     if (!sessionId) return
 
-    // Fetch post survey questions first if not loaded
     if (surveyQuestions.length === 0 && currentSpaceId) {
       await fetchSurveyQuestions(currentSpaceId, 'post')
     }
@@ -303,6 +316,36 @@ export default function ScanPage() {
     setScanState('clocked_out')
   }
 
+  const handleAutoClockOut = async () => {
+    const sessionId = currentSessionRef.current?.id || newSessionIdRef.current
+    const spaceId = currentSpaceIdRef.current
+
+    console.log('Auto clockout - sessionId:', sessionId, 'spaceId:', spaceId)
+    if (!sessionId) return
+
+    // Fetch post survey questions
+    if (spaceId) {
+      await fetchSurveyQuestions(spaceId, 'post')
+    }
+
+    const { error } = await supabase
+      .from('attendance_session')
+      .update({
+        time_ended: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Manila' }).replace(' ', 'T')
+      })
+      .eq('id', sessionId)
+
+    if (error) { console.error('Auto clockout error:', error); return }
+
+    await createNotification(
+      'clock_out',
+      `Auto clocked out: ${currentUser?.first_name} ${currentUser?.last_name}`
+    )
+
+    setSurveyAnswers({})
+    setScanState('already_clocked_in')  // ← show post survey screen
+  }
+
   const handleReset = () => {
     setScanState('idle')
     setCurrentUser(null)
@@ -320,12 +363,67 @@ export default function ScanPage() {
   // }
 
   // Auto return after success
+  // useEffect(() => {
+  //   const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI
+
+  //   if (scanState === 'clocked_in') {
+  //     if (isElectron) return  // Electron handles this via minimize
+  //     const timer = setTimeout(handleReset, 5000)
+  //     return () => clearTimeout(timer)
+  //   }
+
+  //   if (scanState === 'clocked_out') {
+  //     const timer = setTimeout(() => {
+  //       handleReset()
+  //       // In Electron, also tell main process to go fullscreen for next user
+  //       if (isElectron) {
+  //         (window as any).electronAPI.userClockedOut()
+  //       }
+  //     }, 5000)
+  //     return () => clearTimeout(timer)
+  //   }
+  // }, [scanState])
+
   useEffect(() => {
-    if (scanState === 'clocked_in' || scanState === 'clocked_out') {
+    const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI
+
+    if (scanState === 'clocked_in') {
+      if (isElectron) {
+        // Electron: after 3 seconds switch to already_clocked_in for easy clock-out
+        const timer = setTimeout(async () => {
+          if (currentSpaceId) {
+            await fetchSurveyQuestions(currentSpaceId, 'post')
+          }
+          setScanState('already_clocked_in')
+        }, 3000)
+        return () => clearTimeout(timer)
+      } else {
+        // Browser: reset after 5 seconds so next user can scan
+        const timer = setTimeout(handleReset, 5000)
+        return () => clearTimeout(timer)
+      }
+    }
+
+    if (scanState === 'clocked_out') {
       const timer = setTimeout(handleReset, 5000)
       return () => clearTimeout(timer)
     }
   }, [scanState])
+
+  const scanStateRef = useRef(scanState)
+  useEffect(() => {
+    scanStateRef.current = scanState
+  }, [scanState])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !(window as any).electronAPI) return
+
+    (window as any).electronAPI.onAutoClockout(() => {
+      if (scanStateRef.current === 'clocked_in' || scanStateRef.current === 'already_clocked_in') {
+        handleAutoClockOut()
+      }
+    })
+  }, [])
 
   // QR Scanner
   useEffect(() => {
@@ -349,24 +447,33 @@ export default function ScanPage() {
     }
   }, [scanState])
 
-  switch (scanState) {
-    case 'idle':
-      return <IdleScreen onStartScan={() => setScanState('scanning')} onManualSearch={(id) => processUser(id, false)} />
-    case 'scanning':
-      return <ScanningScreen onCancel={() => { if (scannerRef.current) { scannerRef.current.clear(); scannerRef.current = null } setScanState('idle') }} />
-    case 'not_found':
-      return <NotFoundScreen onReset={handleReset} />
-    case 'not_available':
-      return <NotAvailableScreen user={currentUser} onReset={handleReset} />
-    case 'already_clocked_in':
-      return <AlreadyClockedInScreen user={currentUser} surveyQuestions={surveyQuestions} surveyAnswers={surveyAnswers} onAnswerChange={(questionId, answer) => setSurveyAnswers(prev => ({ ...prev, [questionId]: answer }))} onClockOut={handleClockOut} onCancel={handleReset} />
-    case 'pre_survey':
-      return <PreSurveyScreen user={currentUser} timeSlot={currentTimeSlot} surveyQuestions={surveyQuestions} surveyAnswers={surveyAnswers} onAnswerChange={(questionId, answer) => setSurveyAnswers(prev => ({ ...prev, [questionId]: answer }))} onClockIn={handleClockIn} onCancel={handleReset} />
-    case 'clocked_in':
-      return <ClockedInScreen user={currentUser} timeSlot={currentTimeSlot} />
-    case 'clocked_out':
-      return <ClockedOutScreen user={currentUser} />
-    default:
-      return null
+  const renderScreen = () => {
+    switch (scanState) {
+      case 'idle':
+        return <IdleScreen onStartScan={() => setScanState('scanning')} onManualSearch={(id) => processUser(id, false)} />
+      case 'scanning':
+        return <ScanningScreen onCancel={() => { if (scannerRef.current) { scannerRef.current.clear(); scannerRef.current = null } setScanState('idle') }} />
+      case 'not_found':
+        return <NotFoundScreen onReset={handleReset} />
+      case 'not_available':
+        return <NotAvailableScreen user={currentUser} onReset={handleReset} />
+      case 'already_clocked_in':
+        return <AlreadyClockedInScreen user={currentUser} surveyQuestions={surveyQuestions} surveyAnswers={surveyAnswers} onAnswerChange={(questionId, answer) => setSurveyAnswers(prev => ({ ...prev, [questionId]: answer }))} onClockOut={handleClockOut} onCancel={handleReset} />
+      case 'pre_survey':
+        return <PreSurveyScreen user={currentUser} timeSlot={currentTimeSlot} surveyQuestions={surveyQuestions} surveyAnswers={surveyAnswers} onAnswerChange={(questionId, answer) => setSurveyAnswers(prev => ({ ...prev, [questionId]: answer }))} onClockIn={handleClockIn} onCancel={handleReset} />
+      case 'clocked_in':
+        return <ClockedInScreen user={currentUser} timeSlot={currentTimeSlot} />
+      case 'clocked_out':
+        return <ClockedOutScreen user={currentUser} />
+      default:
+        return null
+    }
   }
+
+  return (
+    <>
+      <KioskExit />
+      {renderScreen()}
+    </>
+  )
 }

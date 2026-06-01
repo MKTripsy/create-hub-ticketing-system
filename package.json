@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron:build": "next build && electron-builder",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron . --dev\"",
+    "electron:prod": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",
+    "auto-launch": "^5.0.6",
     "bcryptjs": "^3.0.3",
     "html-to-image": "^1.11.13",
     "html5-qrcode": "^2.3.8",
@@ -32,9 +36,32 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "concurrently": "^9.2.1",
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.0.10"
+  },
+  "main": "electron/main.js",
+  "build": {
+    "appId": "com.createhub.attendance",
+    "productName": "Create Hub Attendance",
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "runAfterFinish": true
+    },
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json"
+    ]
   }
 }
