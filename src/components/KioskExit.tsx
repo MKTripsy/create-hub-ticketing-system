@@ -41,7 +41,7 @@ export default function KioskExit() {
   if (!showPrompt) return null
 
   return (
-    <div className="fixed inset-0 bg-[#FAF2F0] bg-opacity-70 flex items-center justify-center z-[9999]">
+    <div className="fixed inset-0 bg-[#FAF2F0] flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full mx-4">
         <h2 className="text-xl font-bold text-gray-800 mb-2">Exit Kiosk Mode</h2>
         <p className="text-gray-500 text-sm mb-6">Enter admin password to exit.</p>
