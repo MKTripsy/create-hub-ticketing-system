@@ -50,8 +50,8 @@
     "appId": "com.createhub.attendance",
     "productName": "Create Hub Attendance",
     "win": {
-      "target": "nsis",
-      "icon": "public/icon.ico"
+      "target": ["nsis", "portable"],
+      "icon": "public/icon.png"
     },
     "nsis": {
       "oneClick": true,
