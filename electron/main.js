@@ -6,6 +6,11 @@ const isDev = process.argv.includes('--dev')
 let win
 let notificationTimers = []
 
+const autoLauncher = new AutoLaunch({
+  name: 'Create Hub Attendance',
+  path: app.getPath('exe'),
+})
+
 function clearNotificationTimers() {
   notificationTimers.forEach(t => clearTimeout(t))
   notificationTimers = []
@@ -116,7 +121,14 @@ ipcMain.on('try-exit', (event, password) => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  if (!isDev) {
+    autoLauncher.isEnabled().then((isEnabled) => {
+      if (!isEnabled) autoLauncher.enable()
+    }).catch(err => console.error('Auto-launch error:', err))
+  }
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()

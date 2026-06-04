@@ -30,23 +30,6 @@ export default function TimeSlotSettings() {
   const { admin, isLoading } = useAuth()
   console.log('Auth state:', { admin, isLoading })
 
-  // Fetch spaces on mount
-  // useEffect(() => {
-  //   if (isLoading || !admin?.orphanage_id) return
-  //   const fetchSpaces = async () => {
-  //     const { data } = await supabase
-  //       .from('spaces')
-  //       .select('id, space_name')
-  //       .eq('is_active', true)
-  //       .eq('orphanage_id', admin?.orphanage_id)
-  //       .order('id')
-  //     if (data) {
-  //       setSpaces(data)
-  //       if (data.length > 0) setActiveSpace(data[0].id)
-  //     }
-  //   }
-  //   fetchSpaces()
-  // }, [admin?.orphanage_id, isLoading])
   useEffect(() => {
     console.log('Spaces useEffect fired:', { isLoading, orphanage_id: admin?.orphanage_id })
     if (isLoading || !admin?.orphanage_id) return
