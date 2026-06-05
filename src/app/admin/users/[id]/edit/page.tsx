@@ -33,6 +33,12 @@ type SpaceTimeslotLimit = {
 }
 
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const ALL_GRADES = [
+  'Daycare', 'Kindergarten',
+  'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+  'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8',
+  'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
+]
 
 const sortDays = (days: string[]) => {
   return [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
@@ -74,6 +80,7 @@ export default function EditUserPage() {
     grade_level: '',
     primary_space_id: '',
     qr_code: '',
+    custom_id: '',
     is_active: true,
   })
 
@@ -135,6 +142,7 @@ export default function EditUserPage() {
           grade_level: userRes.data.grade_level,
           primary_space_id: userRes.data.primary_space_id.toString(),
           qr_code: userRes.data.qr_code,
+          custom_id: userRes.data.custom_id,
           is_active: userRes.data.is_active,
         })
         if (userRes.data.photo_url) setPhotoPreview(userRes.data.photo_url)
@@ -550,20 +558,26 @@ export default function EditUserPage() {
   }
 
   const handlePrint = () => {
+    if (!form.qr_code) return
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
-      <html><head><title>QR Code - ${form.first_name} ${form.last_name}</title>
-      <style>body{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;margin:0;font-family:sans-serif;}</style>
-      </head><body>
-      <h2>${form.first_name} ${form.last_name}</h2>
-      <div id="qr"></div>
-      <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-      <script>QRCode.toCanvas(document.getElementById('qr'),'${form.qr_code}',{width:200})</script>
-      </body></html>
+      <html>
+        <head>
+          <title>QR Code - ${form.first_name} ${form.last_name}</title>
+          <style>
+            body { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
+          </style>
+        </head>
+        <body>
+          <h2>${form.first_name} ${form.last_name}</h2>
+          <p style="color: gray; font-size: 14px;">${form.custom_id}</p>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(form.qr_code)}" width="200" height="200" />
+          <script>window.onload = () => window.print()</script>
+        </body>
+      </html>
     `)
     printWindow.document.close()
-    printWindow.print()
   }
 
   if (loading) {
