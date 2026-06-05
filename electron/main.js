@@ -1,10 +1,12 @@
 const { app, BrowserWindow, ipcMain, Notification } = require('electron')
 const path = require('path')
+const AutoLaunch = require('auto-launch')
 
 const ADMIN_PASSWORD = 'password'
 const isDev = process.argv.includes('--dev')
 let win
 let notificationTimers = []
+let allowClose = false
 
 const autoLauncher = new AutoLaunch({
   name: 'Create Hub Attendance',
@@ -77,6 +79,22 @@ function createWindow() {
     }
   })
 
+  win.on('close', (e) => {
+    if (!isDev && !allowClose) e.preventDefault()
+  })
+
+  win.on('blur', () => {
+    if (!isDev && win) {
+      setTimeout(() => {
+        if (win && !win.isMinimized()) {  
+          win.focus()
+          win.setAlwaysOnTop(true)
+          win.setAlwaysOnTop(false)
+        }
+      }, 100)
+    }
+  })
+
   const url = isDev
     ? 'http://localhost:3000/scan'
     : 'https://create-hub-ticketing-system.vercel.app/scan'
@@ -112,6 +130,7 @@ ipcMain.on('user-clocked-out', () => {
 
 ipcMain.on('try-exit', (event, password) => {
   if (password === ADMIN_PASSWORD) {
+    allowClose = true
     if (win) {
       win.setKiosk(false)
       win.setFullScreen(false)
