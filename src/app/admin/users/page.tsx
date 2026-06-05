@@ -35,88 +35,79 @@ export default function UserListPage() {
 
   // Fetch all users
   const fetchUsers = async () => {
-  setLoading(true)
-  const { data, error } = await supabase
-    .from('users')
-    .select(`
-      id,
-      custom_id,
-      first_name,
-      last_name,
-      birthdate,
-      grade_level,
-      qr_code,
-      is_active,
-      photo_url,
-      spaces:primary_space_id (
-        space_name
-      )
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        custom_id,
+        first_name,
+        last_name,
+        birthdate,
+        grade_level,
+        qr_code,
+        is_active,
+        photo_url,
+        spaces:primary_space_id (
+          space_name
+        )
+      `)
+      .eq('orphanage_id', admin?.orphanage_id)
+      .order('id', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching users:', error)
+    } else {
+      setUsers((data ?? []) as unknown as User[])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchUsers()
+
+    // Refetch when user navigates back to this page
+    window.addEventListener('focus', fetchUsers)
+    return () => window.removeEventListener('focus', fetchUsers)
+  }, [])
+
+  const handlePrint = () => {
+    if (!selectedUser) return
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>QR Code - ${selectedUser.custom_id}</title>
+          <style>
+            body { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
+          </style>
+        </head>
+        <body>
+          <h2>${selectedUser.first_name} ${selectedUser.last_name}</h2>
+          <p style="color: gray; font-size: 14px;">${selectedUser.custom_id}</p>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedUser.qr_code)}" width="200" height="200" />
+          <script>window.onload = () => window.print()</script>
+        </body>
+      </html>
     `)
-    .eq('orphanage_id', admin?.orphanage_id)
-    .order('id', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching users:', error)
-  } else {
-    setUsers((data ?? []) as unknown as User[])
+    printWindow.document.close()
   }
-  setLoading(false)
-}
 
-useEffect(() => {
-  fetchUsers()
+  const handleDownloadPng = async () => {
+    if (!qrRef.current) return
 
-  // Refetch when user navigates back to this page
-  window.addEventListener('focus', fetchUsers)
-  return () => window.removeEventListener('focus', fetchUsers)
-}, [])
-
-const handlePrint = () => {
-  const printContent = printRef.current
-  if (!printContent) return
-
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) return
-
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>QR Code - ${selectedUser?.custom_id}</title>
-        <style>
-          body { 
-            display: flex; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: sans-serif;
-          }
-        </style>
-      </head>
-      <body>
-        ${printContent.innerHTML}
-      </body>
-    </html>
-  `)
-  printWindow.document.close()
-  printWindow.print()
-}
-
-const handleDownloadPng = async () => {
-  if (!qrRef.current) return
-
-  try {
-    const dataUrl = await toPng(qrRef.current, { quality: 1.0 })
-    const link = document.createElement('a')
-    link.download = `${selectedUser?.custom_id}-qr.png`
-    link.href = dataUrl
-    link.click()
-  } catch (error) {
-    console.error('Error downloading QR:', error)
-    alert('Something went wrong. Please try again.')
+    try {
+      const dataUrl = await toPng(qrRef.current, { quality: 1.0 })
+      const link = document.createElement('a')
+      link.download = `${selectedUser?.custom_id}-qr.png`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('Error downloading QR:', error)
+      alert('Something went wrong. Please try again.')
+    }
   }
-}
 
 
   if (loading) {
@@ -131,16 +122,6 @@ const handleDownloadPng = async () => {
     <AdminGuard>
     <div className="min-h-screen p-8" style={{ backgroundColor: '#FAF2F0' }}>
       <div className="max-w-6xl mx-auto">
-
-        {/* Header */}
-        {/* <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Users</h1>
-          <a
-            href="/admin/users/add"
-            className="bg-[#cee4B8] text-black px-4 py-2 rounded-lg hover:bg-[#76bcad] hover:text-white font-medium">
-            Add User
-          </a>
-        </div> */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Users: {users.length}</h1>
           <a href="/admin/users/add"
@@ -206,14 +187,6 @@ const handleDownloadPng = async () => {
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    {/* <td className="px-6 py-4">
-                      <button
-                        onClick={() => setSelectedUser(user)}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        View QR
-                      </button>
-                    </td> */}
                     <td className="px-6 py-4">
                         <div className="flex gap-3">
                             <button
@@ -256,20 +229,6 @@ const handleDownloadPng = async () => {
                       {selectedUser.spaces?.space_name} — Grade {selectedUser.grade_level}
                     </p>
                   </div>
-              {/* <div ref={printRef} className="text-center p-4">
-                <h2 className="text-xl font-bold text-gray-800 mb-1">
-                  {selectedUser.first_name} {selectedUser.last_name}
-                </h2>
-                <p className="text-gray-500 text-sm mb-4">
-                  {selectedUser.custom_id}
-                </p>
-                <div className="flex justify-center mb-4">
-                  <QRCode value={selectedUser.qr_code} size={200} />
-                </div>
-                <p className="text-gray-400 text-xs">
-                  {selectedUser.spaces?.space_name} — Grade {selectedUser.grade_level}
-                </p>
-              </div> */}
 
               {/* Buttons */}
               <div className="flex gap-3 mt-4">
@@ -292,20 +251,6 @@ const handleDownloadPng = async () => {
                 Close
               </button>
             </div>
-              {/* <div className="flex gap-3 mt-4">
-                <button
-                  onClick={handlePrint}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
-                >
-                   Print QR
-                </button>
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300"
-                >
-                  Close
-                </button>
-              </div> */}
             </div>
           </div>
         )}
