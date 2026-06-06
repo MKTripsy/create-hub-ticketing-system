@@ -13,8 +13,7 @@ import { useAuth } from '@/context/AuthContext'
 type Space = {
   id: number
   space_name: string
-  min_grade: number
-  max_grade: number
+  grades: string[]
 }
 
 type TimeSlot = {
@@ -36,6 +35,12 @@ type SpaceTimeslotLimit = {
 }
 
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const ALL_GRADES = [
+  'Daycare', 'Kindergarten',
+  'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+  'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8',
+  'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
+]
 
 const sortDays = (days: string[]) => {
   return [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b))
@@ -86,17 +91,44 @@ export default function AddUserPage() {
   //   }
   //   fetchData()
   // }, [admin?.orphanage_id, isLoading])
+
+  // useEffect(() => {
+  //   console.log('Spaces useEffect fired:', { isLoading, orphanage_id: admin?.orphanage_id })
+  //   if (isLoading || !admin?.orphanage_id) return
+  //   const fetchData = async () => {
+  //     const { data, error } = await supabase
+  //       .from('spaces')
+  //       .select('*')
+  //       .eq('is_active', true)
+  //       .eq('orphanage_id', admin.orphanage_id)
+  //     console.log('Spaces data:', data, 'Error:', error)
+  //     if (data) setSpaces(data)
+  //   }
+  //   fetchData()
+  // }, [admin?.orphanage_id, isLoading])
+
   useEffect(() => {
-    console.log('Spaces useEffect fired:', { isLoading, orphanage_id: admin?.orphanage_id })
     if (isLoading || !admin?.orphanage_id) return
     const fetchData = async () => {
-      const { data, error } = await supabase
+      const { data: spacesData } = await supabase
         .from('spaces')
         .select('*')
         .eq('is_active', true)
         .eq('orphanage_id', admin.orphanage_id)
-      console.log('Spaces data:', data, 'Error:', error)
-      if (data) setSpaces(data)
+
+      if (spacesData) {
+        // Fetch grades for each space
+        const spacesWithGrades = await Promise.all(
+          spacesData.map(async (space) => {
+            const { data: gradesData } = await supabase
+              .from('space_grades')
+              .select('grade')
+              .eq('space_id', space.id)
+            return { ...space, grades: gradesData?.map(g => g.grade) || [] }
+          })
+        )
+        setSpaces(spacesWithGrades)
+      }
     }
     fetchData()
   }, [admin?.orphanage_id, isLoading])
@@ -172,12 +204,25 @@ export default function AddUserPage() {
   }, [form.primary_space_id])
 
   // Auto-assign space based on grade
+  // useEffect(() => {
+  //   if (form.grade_level) {
+  //     const grade = parseInt(form.grade_level)
+  //     const matchedSpace = spaces.find(
+  //       s => grade >= s.min_grade && grade <= s.max_grade
+  //     )
+  //     if (matchedSpace) {
+  //       setForm(prev => ({ ...prev, primary_space_id: matchedSpace.id.toString() }))
+  //     }
+  //   }
+  // }, [form.grade_level, spaces])
+  
+  // Auto-assign space based on grade
   useEffect(() => {
     if (form.grade_level) {
-      const grade = parseInt(form.grade_level)
-      const matchedSpace = spaces.find(
-        s => grade >= s.min_grade && grade <= s.max_grade
-      )
+      const gradeLabel = isNaN(parseInt(form.grade_level))
+        ? form.grade_level                    // 'Daycare' or 'Kindergarten' — use as-is
+        : `Grade ${form.grade_level}`         // 1-12 → 'Grade 1' etc.
+      const matchedSpace = spaces.find(s => s.grades.includes(gradeLabel))
       if (matchedSpace) {
         setForm(prev => ({ ...prev, primary_space_id: matchedSpace.id.toString() }))
       }
@@ -650,12 +695,24 @@ export default function AddUserPage() {
                   <label className="block text-sm font-medium text-black mb-1">
                     Grade Level <span className="text-red-500">*</span>
                   </label>
+               {/*   <select
+                    required value={form.grade_level}
+                    onChange={e => setForm({ ...form, grade_level: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
+                  >
+                    <option value="">Select grade level</option>
+                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
+                      <option key={g} value={g}>Grade {g}</option>
+                    ))}
+                  </select> */}
                   <select
                     required value={form.grade_level}
                     onChange={e => setForm({ ...form, grade_level: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#CEE4B8]"
                   >
                     <option value="">Select grade level</option>
+                    <option value="Daycare">Daycare</option>
+                    <option value="Kindergarten">Kindergarten</option>
                     {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
                       <option key={g} value={g}>Grade {g}</option>
                     ))}

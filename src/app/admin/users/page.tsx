@@ -31,10 +31,11 @@ export default function UserListPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<HTMLDivElement>(null)
-  const { admin } = useAuth()
+  const { admin, isLoading } = useAuth()
 
   // Fetch all users
   const fetchUsers = async () => {
+    if (!admin?.orphanage_id) return 
     setLoading(true)
     const { data, error } = await supabase
       .from('users')
@@ -64,12 +65,13 @@ export default function UserListPage() {
   }
 
   useEffect(() => {
+    if (isLoading || !admin?.orphanage_id) return
     fetchUsers()
 
     // Refetch when user navigates back to this page
     window.addEventListener('focus', fetchUsers)
     return () => window.removeEventListener('focus', fetchUsers)
-  }, [])
+  }, [admin?.orphanage_id, isLoading])
 
   const handlePrint = () => {
     if (!selectedUser) return
@@ -172,8 +174,13 @@ export default function UserListPage() {
                     <td className="px-6 py-4 text-sm text-gray-800">
                       {user.first_name} {user.last_name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    {/* <td className="px-6 py-4 text-sm text-gray-600">
                       Grade {user.grade_level}
+                    </td> */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {isNaN(parseInt(user.grade_level))
+                        ? user.grade_level
+                        : `Grade ${user.grade_level}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {user.spaces?.space_name}
@@ -225,8 +232,11 @@ export default function UserListPage() {
                     <div className="flex justify-center mb-4">
                       <QRCode value={selectedUser.qr_code} size={200} />
                     </div>
-                    <p className="text-black text-xs">
+                    {/* <p className="text-black text-xs">
                       {selectedUser.spaces?.space_name} — Grade {selectedUser.grade_level}
+                    </p> */}
+                    <p className="text-black text-xs">
+                      {selectedUser.spaces?.space_name} — {isNaN(parseInt(selectedUser.grade_level)) ? selectedUser.grade_level : `Grade ${selectedUser.grade_level}`}
                     </p>
                   </div>
 

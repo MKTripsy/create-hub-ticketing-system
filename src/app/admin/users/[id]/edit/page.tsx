@@ -12,8 +12,7 @@ import { useAuth } from '@/context/AuthContext'
 type Space = {
   id: number
   space_name: string
-  min_grade: number
-  max_grade: number
+  grades: string[]
 }
 
 type TimeSlot = {
@@ -129,7 +128,7 @@ export default function EditUserPage() {
     const fetchData = async () => {
       const [userRes, spacesRes, availRes, userSpacesRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', numericId).single(),
-        supabase.from('spaces').select('*').eq('is_active', true).eq('orphanage_id', admin?.orphanage_id),
+        supabase.from('spaces').select('*').eq('is_active', true).eq('orphanage_id', admin.orphanage_id),
         supabase.from('availability').select('day, time_slot_id, space_id').eq('user_id', numericId),
         supabase.from('user_spaces').select('space_id, is_primary').eq('user_id', numericId),
       ])
@@ -148,18 +147,28 @@ export default function EditUserPage() {
         if (userRes.data.photo_url) setPhotoPreview(userRes.data.photo_url)
       }
 
-      if (spacesRes.data) setSpaces(spacesRes.data)
+      // ← Fetch spaces WITH grades in one go
+      if (spacesRes.data) {
+        const spacesWithGrades = await Promise.all(
+          spacesRes.data.map(async (space) => {
+            const { data: gradesData } = await supabase
+              .from('space_grades')
+              .select('grade')
+              .eq('space_id', space.id)
+            return { ...space, grades: gradesData?.map(g => g.grade) || [] }
+          })
+        )
+        setSpaces(spacesWithGrades)
+      }
 
       if (availRes.data) {
         const primarySpaceId = userRes.data?.primary_space_id
-        // Primary availability
         const primaryAvail = availRes.data
           .filter((a: any) => a.space_id === primarySpaceId)
           .map((a: any) => ({ day: a.day, time_slot_id: a.time_slot_id }))
         setAvailability(primaryAvail)
         setOriginalAvailability(primaryAvail)
 
-        // Secondary availability grouped by space
         const secondaryAvail: Record<number, AvailabilityEntry[]> = {}
         availRes.data
           .filter((a: any) => a.space_id !== primarySpaceId)
@@ -171,7 +180,6 @@ export default function EditUserPage() {
         setOriginalAvailabilityBySpace(secondaryAvail)
       }
 
-      // Load secondary spaces
       if (userSpacesRes.data) {
         const secondaryIds = userSpacesRes.data
           .filter((us: any) => !us.is_primary)
@@ -668,6 +676,8 @@ export default function EditUserPage() {
                   disabled={!isEditing}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347] disabled:bg-gray-50 disabled:text-gray-500"
                 >
+                  <option value="Daycare">Daycare</option>
+                  <option value="Kindergarten">Kindergarten</option>
                   {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
                     <option key={g} value={g}>Grade {g}</option>
                   ))}
