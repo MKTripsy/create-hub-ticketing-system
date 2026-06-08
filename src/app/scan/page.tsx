@@ -36,15 +36,15 @@ export default function ScanPage() {
 
   const getCurrentTimeSlotForSpace = async (spaceId: number): Promise<TimeSlot | null> => {
     const now = new Date()
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`  // ← include seconds
     const { data } = await supabase
       .from('time_slots')
       .select('*')
       .eq('space_id', spaceId)
       .lte('start_time', currentTime)
-      .gte('end_time', currentTime)
+      .gt('end_time', currentTime)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
     return data || null
   }
 

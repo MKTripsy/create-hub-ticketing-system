@@ -21,6 +21,7 @@ export default function Navbar() {
     { href: '/admin/users', label: 'Users' },
     { href: '/admin/attendance', label: 'Attendance' },
     { href: '/scan', label: 'Scan' },
+    { href: '/admin/notifications', label: 'Notifications' }, 
     { href: '/admin/settings', label: 'Settings' },
   ]
 

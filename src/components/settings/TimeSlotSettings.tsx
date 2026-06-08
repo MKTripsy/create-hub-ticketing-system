@@ -91,8 +91,7 @@ export default function TimeSlotSettings() {
       return (
         (newStart >= slotStart && newStart < slotEnd) ||
         (newEnd > slotStart && newEnd <= slotEnd) ||
-        (newStart <= slotStart && newEnd >= slotEnd) ||
-         newStart === slotEnd
+        (newStart <= slotStart && newEnd >= slotEnd) 
       )
     })
   }
