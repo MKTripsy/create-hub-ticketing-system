@@ -6,9 +6,10 @@ import TimeSlotSettings from '@/components/settings/TimeSlotSettings'
 import SurveyOptionSettings from '@/components/settings/SurveyOptionSettings'
 import SpaceSettings from '@/components/settings/SpaceSettings'
 import AdminAccountSettings from '@/components/settings/AdminAccountSettings'
+import HubManagementSettings from '@/components/settings/HubManagementSettings'
 import { useAuth } from '@/context/AuthContext'
 
-type Tab = 'timeslots' | 'survey' | 'spaces' | 'account'
+type Tab = 'timeslots' | 'survey' | 'spaces' | 'account' | 'hubs'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('timeslots')
@@ -19,7 +20,10 @@ export default function SettingsPage() {
     { id: 'spaces', label: 'Components' },
     { id: 'survey', label: 'Survey' },
     // Only show Account tab to superadmin
-    ...(admin?.role === 'superadmin' ? [{ id: 'account' as Tab, label: 'Account' }] : []),
+    ...(admin?.role === 'superadmin' ? [
+      { id: 'account' as Tab, label: 'Account' },
+      { id: 'hubs' as Tab, label: 'Manage Hubs' }, 
+    ] : []),
   ]
 
   return (
@@ -47,6 +51,7 @@ export default function SettingsPage() {
             {activeTab === 'spaces' && <SpaceSettings />}
             {activeTab === 'survey' && <SurveyOptionSettings />}
             {activeTab === 'account' && admin?.role === 'superadmin' && <AdminAccountSettings />}
+            {activeTab === 'hubs' && admin?.role === 'superadmin' && <HubManagementSettings />}
           </div>
         </div>
       </div>
