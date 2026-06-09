@@ -149,12 +149,18 @@ export default function TimeSlotSettings() {
 
       // Also insert space_timeslot_limit for this new slot
       if (newSlot) {
+        const { data: spaceData } = await supabase  // ← add this fetch
+        .from('spaces')
+        .select('default_limit')
+        .eq('id', activeSpace)
+        .single()
+
         await supabase
           .from('space_timeslot_limits')
           .insert({
             space_id: activeSpace,
             time_slot_id: newSlot.id,
-            max_users: 8, // default limit — admin can change in space settings
+            max_users: spaceData?.default_limit ?? 8,
             orphanage_id: admin?.orphanage_id,
           })
       }

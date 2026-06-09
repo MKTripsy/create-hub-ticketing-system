@@ -9,6 +9,13 @@ type Space = {
   space_name: string
   age_group: string
   is_active: boolean
+  default_limit: number
+}
+
+type TimeslotLimit = {
+  time_slot_id: number
+  label: string
+  max_users: number
 }
 
 const ALL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -32,10 +39,12 @@ export default function SpaceSettings() {
   const [form, setForm] = useState({
     space_name: '',
     age_group: 'Junior',
+    default_limit: 8,
   })
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const { admin, isLoading } = useAuth()
+  const [timeslotLimits, setTimeslotLimits] = useState<TimeslotLimit[]>([])
 
   const fetchSpaces = async () => {
     if (!admin?.orphanage_id) return
@@ -46,14 +55,10 @@ export default function SpaceSettings() {
 
   useEffect(() => { fetchSpaces() }, [])
   const fetchSpaceDays = async (spaceId: number) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('space_operating_days')
       .select('day')
       .eq('space_id', Number(spaceId))
-    
-    console.log('Space ID being fetched:', spaceId)
-    console.log('Fetched days:', data)
-    console.log('Error:', error)
     
     // if (data) setSelectedDays(data.map(d => d.day))
     if (data) setSelectedDays(sortDays(data.map(d => d.day)))
@@ -61,7 +66,7 @@ export default function SpaceSettings() {
 
   const openAdd = () => {
     setEditingSpace(null)
-    setForm({ space_name: '', age_group: 'Junior'})
+    setForm({ space_name: '', age_group: 'Junior', default_limit: 8 })
     setSelectedDays(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
     setSelectedGrades([])
     setShowModal(true)
@@ -89,10 +94,12 @@ export default function SpaceSettings() {
     setEditingSpace(space)
     setForm({
       space_name: space.space_name,
-      age_group: space.age_group
+      age_group: space.age_group,
+      default_limit: space.default_limit ?? 8, 
     })
     await fetchSpaceGrades(space.id)
     await fetchSpaceDays(space.id)
+    await openLimits(space)
     setShowModal(true)
   }
 
@@ -111,6 +118,7 @@ export default function SpaceSettings() {
     const payload = {
       space_name: form.space_name,
       age_group: form.age_group,
+      default_limit: form.default_limit,
     }
 
     let spaceId: number
@@ -144,6 +152,17 @@ export default function SpaceSettings() {
         })))
     }
 
+    // Save limits if editing
+    if (editingSpace && timeslotLimits.length > 0) {
+      for (const limit of timeslotLimits) {
+        await supabase
+          .from('space_timeslot_limits')
+          .update({ max_users: limit.max_users })
+          .eq('space_id', editingSpace.id)
+          .eq('time_slot_id', limit.time_slot_id)
+      }
+    }
+
     await fetchSpaces()
     setShowModal(false)
     setSaving(false)
@@ -155,6 +174,31 @@ export default function SpaceSettings() {
     await supabase.from('space_grades').delete().eq('space_id', space.id)
     await supabase.from('spaces').delete().eq('id', space.id)
     await fetchSpaces()
+  }
+
+  const openLimits = async (space: Space) => {
+    const { data: slots } = await supabase
+      .from('time_slots')
+      .select('id, label')
+      .eq('space_id', space.id)
+      .eq('is_active', true)
+      .order('start_time')
+
+    if (!slots || slots.length === 0) { setTimeslotLimits([]); return }
+
+    // Just get the first slot's limit as the space-wide limit
+    const { data: limitData } = await supabase
+      .from('space_timeslot_limits')
+      .select('max_users')
+      .eq('space_id', space.id)
+      .limit(1)
+      .single()
+
+    setTimeslotLimits(slots.map(slot => ({
+      time_slot_id: slot.id,
+      label: slot.label,
+      max_users: limitData?.max_users ?? 8
+    })))
   }
 
   if (loading) return <p className="text-gray-400">Loading...</p>
@@ -179,6 +223,7 @@ export default function SpaceSettings() {
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Eligible Grades</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Operating Days</th>
             {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th> */}
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Enrollment Limit</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
         </thead>
@@ -237,27 +282,7 @@ export default function SpaceSettings() {
                   </label>
                 </div>
               </div>
-              {/* <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Grade</label>
-                  <input
-                    type="number"
-                    value={form.min_grade}
-                    onChange={e => setForm({ ...form, min_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Grade</label>
-                  <input
-                    type="number"
-                    value={form.max_grade}
-                    onChange={e => setForm({ ...form, max_grade: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
-                  />
-                </div>
-              </div> */}
-              {/* Replace the min/max grade inputs with this: */}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Eligible Grades
@@ -301,6 +326,47 @@ export default function SpaceSettings() {
               </div>
             </div>
 
+            {/* Default Enrollment Limit — only show when adding */}
+            {!editingSpace && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Default Enrollment Limit per Timeslot
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.default_limit}
+                  onChange={e => setForm({ ...form, default_limit: parseInt(e.target.value) || 1 })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Applies to all timeslots added to this space.
+                </p>
+              </div>
+            )}
+
+            {/* Enrollment Limit — only show when editing and timeslots exist */}
+            {editingSpace && timeslotLimits.length > 0 && (
+              <div className='mt-4'>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Enrollment Limit per Timeslot
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={timeslotLimits[0]?.max_users ?? 8}
+                  onChange={e => {
+                    const newLimit = parseInt(e.target.value) || 1
+                    setTimeslotLimits(prev => prev.map(l => ({ ...l, max_users: newLimit })))
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Applies to all timeslots in this space.
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSave}
@@ -327,7 +393,7 @@ export default function SpaceSettings() {
 function SpaceRow({
   space,
   onEdit,
-  onDelete
+  onDelete,
 }: {
   space: Space
   onEdit: (space: Space) => void
@@ -335,27 +401,15 @@ function SpaceRow({
 }) {
   const [days, setDays] = useState<string[]>([])
   const [grades, setGrades] = useState<string[]>([])
+  const [limitSummary, setLimitSummary] = useState<string>('')
 
   useEffect(() => {
     const fetchDays = async () => {
-      console.log('Fetching days for space_id:', space.id, 'type:', typeof space.id)
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('space_operating_days')
         .select('day')
         .eq('space_id', Number(space.id))
         .order('id')
-
-         console.log('SpaceRow days for space', space.id, ':', data, error) // ← add
-         
-        const { data: allData } = await supabase
-          .from('space_operating_days')
-          .select('*')
-
-        console.log('All space_operating_days:', allData)
-        console.log('Filtered manually:', allData?.filter(d => d.space_id === Number(space.id)))
-
-
-      // if (data) setDays(data.map(d => d.day))
       if (data) setDays(sortDays(data.map(d => d.day)))
     }
 
@@ -367,8 +421,24 @@ function SpaceRow({
       if (data) setGrades(data.map(g => g.grade))
     }
 
+    const fetchLimits = async () => {
+      const { data } = await supabase
+        .from('space_timeslot_limits')
+        .select('max_users')
+        .eq('space_id', space.id)
+      if (data && data.length > 0) {
+        const unique = [...new Set(data.map(l => l.max_users))]
+        setLimitSummary(unique.length === 1
+          ? `${unique[0]} per slot`
+          : `${Math.min(...unique)}-${Math.max(...unique)} per slot`)
+      } else {
+        setLimitSummary('—')
+      }
+    }
+
     fetchDays()
     fetchGrades()
+    fetchLimits()
   }, [space.id])
 
    return (
@@ -387,6 +457,7 @@ function SpaceRow({
           : <span className="text-gray-300">None</span>
         }
       </td>
+      <td className="px-4 py-3 text-sm text-gray-600">{limitSummary}</td>
       <td className="px-4 py-3 flex gap-3">
         <button onClick={() => onEdit(space)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
         <button onClick={() => onDelete(space)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
