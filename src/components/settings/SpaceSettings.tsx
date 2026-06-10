@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext'
 type Space = {
   id: number
   space_name: string
-  age_group: string
   is_active: boolean
   default_limit: number
 }
@@ -38,7 +37,6 @@ export default function SpaceSettings() {
   const [editingSpace, setEditingSpace] = useState<Space | null>(null)
   const [form, setForm] = useState({
     space_name: '',
-    age_group: 'Junior',
     default_limit: 8,
   })
   const [selectedDays, setSelectedDays] = useState<string[]>([])
@@ -53,7 +51,11 @@ export default function SpaceSettings() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchSpaces() }, [])
+  useEffect(() => {
+    if (isLoading || !admin?.orphanage_id) return
+    fetchSpaces()
+  }, [admin?.orphanage_id, isLoading])
+
   const fetchSpaceDays = async (spaceId: number) => {
     const { data } = await supabase
       .from('space_operating_days')
@@ -66,7 +68,7 @@ export default function SpaceSettings() {
 
   const openAdd = () => {
     setEditingSpace(null)
-    setForm({ space_name: '', age_group: 'Junior', default_limit: 8 })
+    setForm({ space_name: '', default_limit: 8 })
     setSelectedDays(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
     setSelectedGrades([])
     setShowModal(true)
@@ -94,8 +96,7 @@ export default function SpaceSettings() {
     setEditingSpace(space)
     setForm({
       space_name: space.space_name,
-      age_group: space.age_group,
-      default_limit: space.default_limit ?? 8, 
+      default_limit: space.default_limit ?? 8,
     })
     await fetchSpaceGrades(space.id)
     await fetchSpaceDays(space.id)
@@ -117,7 +118,6 @@ export default function SpaceSettings() {
 
     const payload = {
       space_name: form.space_name,
-      age_group: form.age_group,
       default_limit: form.default_limit,
     }
 
@@ -275,7 +275,7 @@ export default function SpaceSettings() {
         <thead className="bg-gray-50">
           <tr>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Age Group</th>
+            {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Age Group</th> */}
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Eligible Grades</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Operating Days</th>
             {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th> */}
@@ -313,7 +313,7 @@ export default function SpaceSettings() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Age Group</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -337,7 +337,7 @@ export default function SpaceSettings() {
                     <span className="text-sm text-black">Senior</span>
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -500,7 +500,7 @@ function SpaceRow({
    return (
     <tr className="hover:bg-gray-50">
       <td className="px-4 py-3 text-sm text-gray-800">{space.space_name}</td>
-      <td className="px-4 py-3 text-sm text-gray-600">{space.age_group}</td>
+      {/* <td className="px-4 py-3 text-sm text-gray-600">{space.age_group}</td> */}
       <td className="px-4 py-3 text-sm text-gray-600">
         {grades.length > 0
           ? grades.join(', ')
