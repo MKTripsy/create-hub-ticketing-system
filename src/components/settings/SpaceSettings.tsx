@@ -244,7 +244,7 @@ export default function SpaceSettings() {
         <div className="fixed inset-0 bg-[#FAF2F0] bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4 max-h-screen overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              {editingSpace ? 'Edit Space' : 'Add Space'}
+              {editingSpace ? 'Edit Component' : 'Add Component'}
             </h3>
             <div className="space-y-4">
               <div>
