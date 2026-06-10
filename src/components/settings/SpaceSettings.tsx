@@ -170,9 +170,65 @@ export default function SpaceSettings() {
 
   const handleDelete = async (space: Space) => {
     if (!confirm(`Are you sure you want to delete "${space.space_name}"?`)) return
+
+    // 1. Get all timeslots for this space
+    const { data: timeslots } = await supabase
+      .from('time_slots')
+      .select('id')
+      .eq('space_id', space.id)
+
+    const timeslotIds = timeslots?.map(t => t.id) || []
+
+    // 2. Get all sessions for this space
+    const { data: sessions } = await supabase
+      .from('attendance_session')
+      .select('id')
+      .eq('accessed_space', space.id)
+
+    const sessionIds = sessions?.map(s => s.id) || []
+
+    // 3. Delete survey responses for those sessions
+    if (sessionIds.length > 0) {
+      await supabase.from('survey_responses').delete().in('session_id', sessionIds)
+    }
+
+    // 4. Delete attendance sessions
+    await supabase.from('attendance_session').delete().eq('accessed_space', space.id)
+
+    // 5. Delete availability
+    await supabase.from('availability').delete().eq('space_id', space.id)
+
+    // 6. Delete user_spaces
+    await supabase.from('user_spaces').delete().eq('space_id', space.id)
+
+    // 7. Delete timeslot limits
+    await supabase.from('space_timeslot_limits').delete().eq('space_id', space.id)
+
+    // 8. Delete timeslots
+    if (timeslotIds.length > 0) {
+      await supabase.from('time_slots').delete().in('id', timeslotIds)
+    }
+
+    // 9. Delete survey questions and options
+    const { data: questions } = await supabase
+      .from('survey_questions')
+      .select('id')
+      .eq('space_id', space.id)
+
+    const questionIds = questions?.map(q => q.id) || []
+
+    if (questionIds.length > 0) {
+      await supabase.from('survey_question_options').delete().in('question_id', questionIds)
+      await supabase.from('survey_questions').delete().in('id', questionIds)
+    }
+
+    // 10. Delete operating days and grades
     await supabase.from('space_operating_days').delete().eq('space_id', space.id)
     await supabase.from('space_grades').delete().eq('space_id', space.id)
+
+    // 11. Finally delete the space
     await supabase.from('spaces').delete().eq('id', space.id)
+
     await fetchSpaces()
   }
 

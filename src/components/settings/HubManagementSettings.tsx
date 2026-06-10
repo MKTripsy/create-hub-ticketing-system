@@ -273,7 +273,7 @@ export default function HubManagementSettings() {
                       type="text"
                       value={hubForm.name}
                       onChange={e => setHubForm({ ...hubForm, name: e.target.value })}
-                      placeholder="e.g. House of Hope"
+                      placeholder="e.g. Home of Hope"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                     />
                   </div>
