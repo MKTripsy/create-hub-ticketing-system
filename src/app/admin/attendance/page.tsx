@@ -63,7 +63,7 @@ export default function AttendanceLogsPage() {
   const [showExportModal, setShowExportModal] = useState(false)
   const [exportScope, setExportScope] = useState<'filtered' | 'all'>('filtered')
   const [exporting, setExporting] = useState(false)
-  const { admin } = useAuth()
+  const { admin, isLoading } = useAuth()
 
   const handleEditStart = (log: AttendanceLog) => {
     setEditingId(log.id)
@@ -143,9 +143,22 @@ export default function AttendanceLogsPage() {
   }
 
   const fetchLogs = async () => {
+    if (!admin?.orphanage_id) return
     setLoading(true)
 
+    const { data: spacesData } = await supabase
+      .from('spaces')
+      .select('id')
+      .eq('is_active', true)
+      .eq('orphanage_id', admin.orphanage_id)
+
     const spaceIds = spaces.map(s => s.id)
+
+    if (spaceIds.length === 0) {
+      setLogs([])
+      setLoading(false)
+      return
+    }
 
     let query = supabase
       .from('attendance_session')
@@ -164,6 +177,7 @@ export default function AttendanceLogsPage() {
           space_name
         )
       `)
+      .in('accessed_space', spaceIds)
       .order('time_started', { ascending: false })
 
     // if (spaceIds.length > 0) query = query.in('accessed_space', spaceIds)
@@ -244,12 +258,9 @@ export default function AttendanceLogsPage() {
   }
 
   useEffect(() => {
-    fetchSpaces()
-  }, [])
-
-  useEffect(() => {
+    if (isLoading || !admin?.orphanage_id) return
     fetchLogs()
-  }, [filterDate, filterSpace])
+  }, [filterDate, filterSpace, admin?.orphanage_id, isLoading])
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this attendance record?')) return
@@ -271,10 +282,6 @@ export default function AttendanceLogsPage() {
       return
     }
 
-    // await createNotification(
-    //   'attendance_deleted',
-    //   `Admin deleted attendance record #${id}`
-    // )
     await createNotification('attendance_deleted', 
       `Admin deleted attendance record #${id}`, 
       admin?.orphanage_id ?? undefined)
@@ -294,9 +301,10 @@ export default function AttendanceLogsPage() {
   }
 
   useEffect(() => {
+    if (isLoading || !admin?.orphanage_id) return
     fetchSpaces()
     fetchUsers()
-  }, [])
+  }, [admin?.orphanage_id, isLoading])
 
   const handleManualEntry = async () => {
     if (!manualForm.user_id || !manualForm.space_id || !manualForm.date || !manualForm.time_started) {
@@ -339,12 +347,6 @@ export default function AttendanceLogsPage() {
       const userName = `${users.find(u => u.id === parseInt(manualForm.user_id))?.first_name} ${users.find(u => u.id === parseInt(manualForm.user_id))?.last_name}`
       // await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`)
       await createNotification('manual_entry', `Admin added manual attendance entry for ${userName}`, admin?.orphanage_id ?? undefined)
-
-      // await createNotification(
-      //   'manual_entry',
-      //   `Admin added manual attendance entry for ${users.find(u => u.id === parseInt(manualForm.user_id))?.first_name} ${users.find(u => u.id === parseInt(manualForm.user_id))?.last_name}`
-      // )
-
     } catch (error) {
       console.error('Manual entry error:', error)
       alert('Something went wrong. Please try again.')
@@ -383,6 +385,12 @@ export default function AttendanceLogsPage() {
       return filteredLogs
     }
 
+    const { data: spacesData } = await supabase
+    .from('spaces')
+    .select('id')
+    .eq('is_active', true)
+    .eq('orphanage_id', admin?.orphanage_id)
+
     const spaceIds = spaces.map(s => s.id)
 
     // Fetch all records
@@ -403,6 +411,7 @@ export default function AttendanceLogsPage() {
           space_name
         )
       `)
+      .in('accessed_space', spaceIds)
       .order('time_started', { ascending: false })
 
     if (error || !data) return []

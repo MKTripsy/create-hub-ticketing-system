@@ -68,7 +68,7 @@ export default function Navbar() {
 
           {/* Orphanage name */}
           <p className="text-xs text-black mt-2 mb-0.5">
-            {admin.orphanage_name || 'All Orphanages'}
+            {admin.orphanage_name || 'Current Hub'}
           </p>
 
           {/* Role badge */}
