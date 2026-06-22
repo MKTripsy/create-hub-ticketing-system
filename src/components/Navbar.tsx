@@ -16,13 +16,13 @@ export default function Navbar() {
   if (!admin) return null
 
   const navLinks = [
-    { href: '/admin/dashboard', label: 'Dashboard' },
-    { href: '/admin/schedules', label: 'Schedules' },
-    { href: '/admin/users', label: 'Users' },
     { href: '/admin/attendance', label: 'Attendance' },
+    { href: '/admin/notifications', label: 'Activity Logs' }, 
+    { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/scan', label: 'Scan' },
-    { href: '/admin/notifications', label: 'Notifications' }, 
+    { href: '/admin/schedules', label: 'Schedules' },
     { href: '/admin/settings', label: 'Settings' },
+    { href: '/admin/users', label: 'Hubbers' },
   ]
 
   const handleLogout = () => {
@@ -67,7 +67,7 @@ export default function Navbar() {
           <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto" />
 
           {/* Orphanage name */}
-          <p className="text-xs text-black mt-2 mb-0.5">
+          <p className="text-xl text-white font-bold mt-2 mb-0.5">
             {admin.orphanage_name || 'Current Hub'}
           </p>
 
