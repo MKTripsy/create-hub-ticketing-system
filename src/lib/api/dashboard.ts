@@ -5,11 +5,11 @@ export type DailyAttendance = { day: string; [key: string]: number | string }
 export type SpaceDistribution = { name: string; value: number }
 export type Notification = { id: number; type: string; message: string; created_at: string }
 
-const getWeekDates = () => {
+const getWeekDates = (weekOffset = 0) => {
   const dates = []
   for (let i = 6; i >= 0; i--) {
     const date = new Date()
-    date.setDate(date.getDate() - i)
+    date.setDate(date.getDate() - i - weekOffset * 7)
     dates.push(date.toISOString().split('T')[0])
   }
   return dates
@@ -49,9 +49,10 @@ export const fetchTodaySessions = async (spaceIds: number[], today: string) => {
 
 export const fetchWeeklyAttendance = async (
   spaceIds: number[],
-  spacesData: SpaceItem[]
+  spacesData: SpaceItem[],
+  weekOffset = 0
 ): Promise<DailyAttendance[]> => {
-  const weekDates = getWeekDates()
+  const weekDates = getWeekDates(weekOffset)
   return await Promise.all(
     weekDates.map(async (date) => {
       const { data: sessions } = await supabase

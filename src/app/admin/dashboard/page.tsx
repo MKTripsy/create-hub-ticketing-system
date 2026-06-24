@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [weeklyData, setWeeklyData] = useState<DailyAttendance[]>([])
   const [spaceData, setSpaceData] = useState<SpaceDistribution[]>([])
   const [spaces, setSpaces] = useState<SpaceItem[]>([])
+  const [spaceIds, setSpaceIds] = useState<number[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
@@ -103,15 +104,9 @@ export default function DashboardPage() {
           />
 
           <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
-            <WeeklyChart weeklyData={weeklyData} spaces={spaces} />
+            <WeeklyChart weeklyData={weeklyData} spaces={spaces} spaceIds={spaceIds} />
             <SpaceUsageChart spaceData={spaceData} />
           </div>
-
-          {/* <NotificationFeed
-            notifications={notifications}
-            onRefresh={loadNotifications}
-          /> */}
-
         </div>
       </div>
     </AdminGuard>
