@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
     )
 
     if (success) {
-      router.push('/admin/attendance')
+      router.push('/admin/dashboard')
     } else {
       setError('Invalid username or password.')
     }
