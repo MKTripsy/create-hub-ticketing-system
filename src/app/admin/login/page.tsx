@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
     )
 
     if (success) {
-      router.push('/admin/dashboard')
+      router.push('/admin/attendance')
     } else {
       setError('Invalid username or password.')
     }
@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Orphanage Dropdown */}
+          {/* Create Hub Dropdown */}
           <div>
             <label className="block text-sm font-medium text-black mb-1">
               Create Hub

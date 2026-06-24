@@ -1,16 +1,22 @@
 import Link from 'next/link'
+import CFLogo from '@/app/images/CFLogoBOnyx2.png'
 
 export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: '#FAF2F0' }}>
       <div className="max-w-250px  text-center">
 
+
+        {/* Logo */}
+        <div className="flex justify-center items-center text-center w-full mb-12">
+          <img src={CFLogo.src} alt="Create Hub Logo" style={{height: "35%", width: "35%"}}/>
+        </div>
+
         {/* Organization Name */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-800 mb-2">
             Create Hub Portal
           </h1>
-            
         </div>
 
         {/* Buttons */}

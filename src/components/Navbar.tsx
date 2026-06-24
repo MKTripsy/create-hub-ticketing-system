@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import AdminGuard from './AdminGuard'
 import Image from 'next/image'
-import CFLogo from '@/app/images/CFLogoBOnyx.png'
+import CFLogo from '@/app/images/CFLogoBOnyx2.png'
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -58,13 +58,13 @@ export default function Navbar() {
 
         {/* Admin info */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
-          <button
+          {/* <button
             onClick={() => setSidebarOpen(false)}
             className="text-white hover:text-gray-600 text-xl font-bold"
           >
             ✕
-          </button>
-          <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto" />
+          </button> */}
+          <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto mt-6 mb-6" />
 
           {/* Orphanage name */}
           <p className="text-xl text-white font-bold mt-2 mb-0.5">
