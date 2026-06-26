@@ -12,6 +12,7 @@ import StatCards from '@/components/dashboard/StatCards'
 import WeeklyChart from '@/components/dashboard/WeeklyChart'
 import SpaceUsageChart from '@/components/dashboard/SpaceUsageChart'
 import NotificationFeed from '@/components/dashboard/NotificationFeed'
+import SurveyStatCards from '@/components/dashboard/SurveyStatCards'
 
 export default function DashboardPage() {
   const { admin, isLoading } = useAuth()
@@ -34,12 +35,13 @@ export default function DashboardPage() {
     const spacesData = await fetchDashboardSpaces(admin.orphanage_id)
     setSpaces(spacesData)
 
-    const spaceIds = spacesData.map(s => s.id)
+    const ids = spacesData.map(s => s.id)
+    setSpaceIds(ids)
 
     const [users, todaySessions, weekly] = await Promise.all([
       fetchTotalUsers(admin.orphanage_id),
-      fetchTodaySessions(spaceIds, today),
-      fetchWeeklyAttendance(spaceIds, spacesData),
+      fetchTodaySessions(ids, today),
+      fetchWeeklyAttendance(ids, spacesData),
     ])
 
     setTotalUsers(users)
@@ -107,6 +109,15 @@ export default function DashboardPage() {
             <WeeklyChart weeklyData={weeklyData} spaces={spaces} spaceIds={spaceIds} />
             <SpaceUsageChart spaceData={spaceData} />
           </div>
+
+          {/* Hub Use */}
+          <div className="mb-2">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Hub Use</h2>
+          </div>
+          <div className="mb-8">
+            {spaceIds.length > 0 && <SurveyStatCards spaceIds={spaceIds} />}
+          </div>
+
         </div>
       </div>
     </AdminGuard>

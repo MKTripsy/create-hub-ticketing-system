@@ -5,18 +5,36 @@ export type DailyAttendance = { day: string; [key: string]: number | string }
 export type SpaceDistribution = { name: string; value: number }
 export type Notification = { id: number; type: string; message: string; created_at: string }
 
+export type SurveyOptionCount = { label: string; count: number }
+export type SurveyQuestionSummary = {
+  question_id: number
+  question_text: string
+  answer_type: 'multiple_choice' | 'open_ended'
+  survey_type: 'pre' | 'post'
+  option_counts: SurveyOptionCount[]   // multiple choice
+  open_responses: string[]             // open ended
+}
+
 const getWeekDates = (weekOffset = 0) => {
-  const dates = []
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i - weekOffset * 7)
-    dates.push(date.toISOString().split('T')[0])
-  }
-  return dates
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const sunday = new Date(today)
+  sunday.setDate(today.getDate() - dayOfWeek - weekOffset * 7)
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(sunday)
+    date.setDate(sunday.getDate() + i)
+    return date.toISOString().split('T')[0]
+  })
+}
+
+export const getWeekBounds = (weekOffset = 0): { start: string; end: string } => {
+  const dates = getWeekDates(weekOffset)
+  return { start: dates[0], end: dates[6] }
 }
 
 const getDayLabel = (dateStr: string) => {
-  const date = new Date(dateStr)
+  const date = new Date(dateStr + 'T00:00:00')
   return date.toLocaleDateString('en-US', { weekday: 'short' })
 }
 
@@ -80,6 +98,84 @@ export const fetchNotifications = async (orphanageId: number): Promise<Notificat
     .order('created_at', { ascending: false })
     .limit(50)
   return data || []
+}
+
+export const fetchWeeklySurveyData = async (
+  spaceIds: number[],
+  weekOffset = 0
+): Promise<SurveyQuestionSummary[]> => {
+  const { start, end } = getWeekBounds(weekOffset)
+
+  // 1. Get all sessions in this week's date range
+  const { data: sessions } = await supabase
+    .from('attendance_session')
+    .select('id')
+    .in('accessed_space', spaceIds.length > 0 ? spaceIds : [0])
+    .gte('date', start)
+    .lte('date', end)
+
+  if (!sessions || sessions.length === 0) return []
+  const sessionIds = sessions.map(s => s.id)
+
+  // 2. Get all survey responses for those sessions, joining questions and options
+  const { data: responses } = await supabase
+    .from('survey_responses')
+    .select(`
+      session_id,
+      text_response,
+      survey_questions (
+        id,
+        question_text,
+        answer_type,
+        survey_type
+      ),
+      survey_question_options (
+        label
+      )
+    `)
+    .in('session_id', sessionIds)
+
+  if (!responses) return []
+
+  // 3. Aggregate by question
+  const questionMap = new Map<number, SurveyQuestionSummary>()
+
+  for (const r of responses as any[]) {
+    const q = r.survey_questions
+    if (!q) continue
+
+    if (!questionMap.has(q.id)) {
+      questionMap.set(q.id, {
+        question_id: q.id,
+        question_text: q.question_text,
+        answer_type: q.answer_type,
+        survey_type: q.survey_type,
+        option_counts: [],
+        open_responses: [],
+      })
+    }
+
+    const summary = questionMap.get(q.id)!
+
+    if (q.answer_type === 'open_ended') {
+      if (r.text_response) summary.open_responses.push(r.text_response)
+    } else {
+      const label = r.survey_question_options?.label
+      if (label) {
+        const existing = summary.option_counts.find(o => o.label === label)
+        if (existing) existing.count++
+        else summary.option_counts.push({ label, count: 1 })
+      }
+    }
+  }
+
+  // Sort option_counts by count descending
+  const result = Array.from(questionMap.values())
+  result.forEach(q => {
+    q.option_counts.sort((a, b) => b.count - a.count)
+  })
+
+  return result
 }
 
 export const getNotificationStyle = (type: string) => {
