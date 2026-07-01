@@ -29,7 +29,7 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
        {isElectron && (
           <button
             onClick={() => window.dispatchEvent(new Event('kiosk-exit-requested'))}
-            className="fixed top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-500 hover:text-gray-800 text-xs px-3 py-1.5 rounded-lg shadow border border-gray-200 transition-colors"
+            className="fixed top-4 right-4 z-50 bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] text-xs px-3 py-1.5 rounded-lg shadow border border-gray-200 transition-colors"
           >
             Exit Kiosk
           </button>

@@ -59,14 +59,6 @@ export default function KioskExit() {
 
   return (
     <>
-      {/* Always-visible exit button */}
-      <button
-        onClick={() => { setShowPrompt(true); setPassword(''); setError('') }}
-        className="fixed top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-500 hover:text-gray-800 text-xs px-3 py-1.5 rounded-lg shadow border border-gray-200 transition-colors"
-      >
-        Exit Kiosk
-      </button>
-
       {/* Password prompt */}
       {showPrompt && (
         <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#FAF2F0' }}>
