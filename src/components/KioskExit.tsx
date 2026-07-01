@@ -8,6 +8,11 @@ export default function KioskExit() {
   const [error, setError] = useState('')
   const [isElectron, setIsElectron] = useState(false)
 
+  const closePrompt = () => {
+    setShowPrompt(false)
+    window.dispatchEvent(new Event('kiosk-exit-closed'))
+  }
+
   useEffect(() => {
     setIsElectron(typeof window !== 'undefined' && !!(window as any).electronAPI)
 
@@ -16,9 +21,11 @@ export default function KioskExit() {
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('kiosk-exit-requested', openPrompt)
+    window.addEventListener('kiosk-exit-closed', closePrompt)
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('kiosk-exit-requested', openPrompt)
+      window.removeEventListener('kiosk-exit-closed', closePrompt)
     }
   }, [])
 
@@ -57,7 +64,7 @@ export default function KioskExit() {
             className="flex-1 bg-[#FF6347] text-white py-2 rounded-lg hover:bg-[#414141] font-medium">
             Exit
           </button>
-          <button onClick={() => setShowPrompt(false)}
+          <button onClick={closePrompt}
             className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
             Cancel
           </button>

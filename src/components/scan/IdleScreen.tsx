@@ -12,9 +12,20 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
   const [manualId, setManualId] = useState('')
   const [loading, setLoading] = useState(false)
   const [isElectron, setIsElectron] = useState(false)
+  const [promptOpen, setPromptOpen] = useState(false)
 
   useEffect(() => {
     setIsElectron(typeof window !== 'undefined' && !!(window as any).electronAPI)
+
+    const open = () => setPromptOpen(true)
+    const close = () => setPromptOpen(false)
+
+    window.addEventListener('kiosk-exit-requested', open)
+    window.addEventListener('kiosk-exit-closed', close)
+    return () => {
+      window.removeEventListener('kiosk-exit-requested', open)
+      window.removeEventListener('kiosk-exit-closed', close)
+    }
   }, [])
 
   const handleSearch = async () => {
@@ -26,12 +37,12 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
-       {isElectron && (
+       {isElectron && !promptOpen && (
           <button
             onClick={() => window.dispatchEvent(new Event('kiosk-exit-requested'))}
             className="fixed top-4 right-4 z-50 bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] text-xs px-3 py-1.5 rounded-lg shadow border border-gray-200 transition-colors"
           >
-            Exit Kiosk
+            Exit App
           </button>
         )}
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
