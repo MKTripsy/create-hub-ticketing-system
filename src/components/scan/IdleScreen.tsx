@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type Props = {
   onStartScan: () => void
@@ -11,6 +11,11 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
   const [activeTab, setActiveTab] = useState<'qr' | 'manual'>('qr')
   const [manualId, setManualId] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isElectron, setIsElectron] = useState(false)
+
+  useEffect(() => {
+    setIsElectron(typeof window !== 'undefined' && !!(window as any).electronAPI)
+  }, [])
 
   const handleSearch = async () => {
     if (!manualId.trim()) return
@@ -21,6 +26,14 @@ export default function IdleScreen({ onStartScan, onManualSearch }: Props) {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8">
+       {isElectron && (
+          <button
+            onClick={() => window.dispatchEvent(new Event('kiosk-exit-requested'))}
+            className="fixed top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-500 hover:text-gray-800 text-xs px-3 py-1.5 rounded-lg shadow border border-gray-200 transition-colors"
+          >
+            Exit Kiosk
+          </button>
+        )}
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
         <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
           Attendance System
