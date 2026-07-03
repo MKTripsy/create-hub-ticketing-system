@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import AdminGuard from './AdminGuard'
 import Image from 'next/image'
-import CFLogo from '@/app/images/CFLogoBOnyx2.png'
+import CFLogo from '@/app/images/CREATE FOUNDATION logo B Snow.svg'
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -16,13 +16,13 @@ export default function Navbar() {
   if (!admin) return null
 
   const navLinks = [
-    { href: '/admin/attendance', label: 'Attendance' },
-    { href: '/admin/notifications', label: 'Activity Logs' }, 
     { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/scan', label: 'Scan' },
-    { href: '/admin/schedules', label: 'Schedules' },
-    { href: '/admin/settings', label: 'Settings' },
     { href: '/admin/users', label: 'Hubbers' },
+    { href: '/admin/attendance', label: 'Attendance' },
+    { href: '/admin/schedules', label: 'Schedules' },
+    { href: '/admin/notifications', label: 'Activity Logs' }, 
+    { href: '/admin/settings', label: 'Settings' },
   ]
 
   const handleLogout = () => {
@@ -56,19 +56,20 @@ export default function Navbar() {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`} style={{ backgroundColor: '#FF6347' }}>
 
-        {/* Admin info */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
-          {/* <button
-            onClick={() => setSidebarOpen(false)}
-            className="text-white hover:text-gray-600 text-xl font-bold"
-          >
-            ✕
-          </button> */}
-          <Image src={CFLogo} alt="Create Hub Logo" className="w-auto h-auto mt-6 mb-6" />
+          <Image src={CFLogo} alt="Create Hub Logo" className="w-[60%] h-auto mx-auto block" />
 
-          {/* Orphanage name */}
+          {/* Create Hub name */}
           <p className="text-xl text-white font-bold mt-2 mb-0.5">
             {admin.orphanage_name || 'Current Hub'}
+          </p>
+          
+        </div>
+
+        {/* Admin info */}
+        <div className="px-6 py-4 border-b border-[#FAF2F0]">
+          <p className="text-xl text-white font-bold">
+            {admin.first_name} {admin.last_name}
           </p>
 
           {/* Role badge */}
@@ -79,11 +80,6 @@ export default function Navbar() {
           }`}>
             {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
           </span>
-
-          <p className="text-xs text-black mt-2 mb-1">Logged in as</p>
-          <p className="text-xl font-bold">
-            {admin.first_name} {admin.last_name}
-          </p>
         </div>
 
         {/* Nav links */}

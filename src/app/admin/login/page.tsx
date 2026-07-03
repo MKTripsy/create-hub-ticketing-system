@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf2f0] flex items-center justify-center p-8">
+    <div className="min-h-screen bg-[#FAF2F0] flex items-center justify-center p-8">
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full">
 
         <div className="text-center mb-8">
@@ -85,7 +85,7 @@ export default function AdminLoginPage() {
               required
               value={form.orphanage_id}
               onChange={e => setForm({ ...form, orphanage_id: e.target.value })}
-              className="w-full border border-[#76bcad] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#76bcad]"
+              className="w-full border border-[#FF6347] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             >
               <option value="">Select a Create Hub</option>
               {orphanages.map(o => (
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
               required
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value.replace(/\s/g, '') })}
-              className="w-full border border-[#76bcad] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#76bcad]"
+              className="w-full border border-[#FF6347] rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
               placeholder="Enter username"
             />
           </div>
@@ -122,13 +122,13 @@ export default function AdminLoginPage() {
                 required
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
-                className="w-full border border-[#76bcad] rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#76bcad] text-black"
+                className="w-full border border-[#FF6347] rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#FF6347] text-black"
                 placeholder="Enter password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-[#FF6347] transition-colors"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -138,7 +138,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#cee4b8] text-[#414141] py-2 rounded-lg hover:bg-[#76bcad] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed font-medium mt-2"
+            className="w-full bg-[#FF6347] text-[#FAF2F0] py-2 rounded-lg hover:bg-[#414141] disabled:opacity-50 disabled:cursor-not-allowed font-medium mt-2 transition-colors"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
