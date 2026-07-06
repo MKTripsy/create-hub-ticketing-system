@@ -47,8 +47,8 @@ export default function AttendanceTable({
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">ID</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Component</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Clock In</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Clock Out</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">In</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Out</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Duration</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Pre Survey</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Post Survey</th>

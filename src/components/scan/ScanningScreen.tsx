@@ -8,7 +8,8 @@ export default function ScanningScreen({ onCancel }: Props) {
       <div className="bg-white rounded-xl shadow p-8 max-w-md w-full text-black text-center">
         <h1 className="text-2xl font-bold text-black mb-2">Scanning...</h1>
         <p className="text-black mb-6">Hold the QR card up to the camera</p>
-        <p className="text-black mb-6">Click on "Request Device Permission" if camera doesn't activate</p>
+        <p className="text-black mb-6">Click on "Request Device Permission" if camera doesn't activate, then click Start Scanning</p>
+        <p className="text-black mb-6">When scanning using an image file, click on Scan an Image File, then click on Choose Image</p>
         <div id="qr-reader" className="mb-6" />
         <button
           onClick={onCancel}

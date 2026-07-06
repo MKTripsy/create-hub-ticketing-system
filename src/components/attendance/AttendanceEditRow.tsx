@@ -67,7 +67,7 @@ export default function AttendanceEditRow({
       <td className="px-4 py-2">
         <div className="flex gap-2">
           <button onClick={onSave} className="text-green-600 hover:text-green-800 text-xs font-medium">Save</button>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 text-xs font-medium">Cancel</button>
+          <button onClick={onCancel} className="text-red-400 hover:text-gray-600 text-xs font-medium">Cancel</button>
         </div>
       </td>
     </>

@@ -76,7 +76,10 @@ export default function AttendanceLogsPage() {
 
   const refreshLogs = () => {
     if (orphanageId === null) return
-    fetchAttendanceLogs(orphanageId, filterDate, filterSpace).then(setLogs)
+    // fetchAttendanceLogs(orphanageId, filterDate, filterSpace).then(setLogs)
+    setLoading(true)
+    fetchAttendanceLogs(orphanageId, filterDate, filterSpace)
+      .then(data => { setLogs(data); setLoading(false) })
   }
 
   const handleEditStart = (log: AttendanceLog) => {
@@ -148,8 +151,8 @@ export default function AttendanceLogsPage() {
               </button>
               <button
                 onClick={refreshLogs}
-                className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm">
-                Refresh
+                className="text-[#FF6347] hover:text-[#414141] px-4 py-2 text-sm font-medium">
+                 ⟳ Refresh
               </button>
             </div>
           </div>
