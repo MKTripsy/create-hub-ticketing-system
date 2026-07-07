@@ -2,6 +2,7 @@
 
 import { AttendanceLog, AttendanceUser, AttendanceSpace, formatTime, formatDuration } from '@/lib/api/attendance'
 import AttendanceEditRow from './AttendanceEditRow'
+import { useState } from 'react'
 
 type EditForm = {
   user_id: string
@@ -33,6 +34,28 @@ export default function AttendanceTable({
       <div className="bg-white rounded-xl shadow p-12 text-center">
         <p className="text-gray-400 text-lg mb-2">No attendance records found</p>
         <p className="text-gray-300 text-sm">Try adjusting your filters or check a different date</p>
+      </div>
+    )
+  }
+
+  function SurveyCell({ responses }: { responses: string[] }) {
+    const [expanded, setExpanded] = useState(false)
+
+    if (responses.length === 0) return <span className="text-gray-300">—</span>
+
+    const preview = expanded ? responses : responses.slice(0, 1)
+
+    return (
+      <div className="space-y-1">
+        {preview.map((s, i) => <p key={i} className="text-xs">{s}</p>)}
+        {responses.length > 1 && (
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="text-xs text-[#FF6347] hover:underline"
+          >
+            {expanded ? 'Hide' : `+${responses.length - 1} more`}
+          </button>
+        )}
       </div>
     )
   }
@@ -85,7 +108,15 @@ export default function AttendanceTable({
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatDuration(log.time_started, log.time_ended)}
                     </td>
+                    {/* Pre Survey */}
                     <td className="px-6 py-4 text-sm text-gray-600">
+                      <SurveyCell responses={log.pre_surveys} />
+                    </td>
+                    {/* Post Survey */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <SurveyCell responses={log.post_surveys} />
+                    </td>
+                    {/* <td className="px-6 py-4 text-sm text-gray-600">
                       {log.pre_surveys.length === 0
                         ? <span className="text-gray-300">—</span>
                         : <div className="space-y-1">{log.pre_surveys.map((s, i) => <p key={i} className="text-xs">{s}</p>)}</div>}
@@ -94,7 +125,7 @@ export default function AttendanceTable({
                       {log.post_surveys.length === 0
                         ? <span className="text-gray-300">—</span>
                         : <div className="space-y-1">{log.post_surveys.map((s, i) => <p key={i} className="text-xs">{s}</p>)}</div>}
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4">
                       <div className="flex gap-3">
                         <button onClick={() => onEditStart(log)}

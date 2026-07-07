@@ -1,8 +1,10 @@
+import { Users, CircleDot, CircleCheck } from 'lucide-react'
+
 type StatCard = {
   label: string
   value: number
-  color: string
-  icon: string
+  colorClass: string
+  Icon: React.ElementType
 }
 
 type Props = {
@@ -13,20 +15,20 @@ type Props = {
 
 export default function StatCards({ totalUsers, activeNow, completedToday }: Props) {
   const cards: StatCard[] = [
-    { label: 'Total Hubbers', value: totalUsers, color: 'bg-blue-50 text-blue-600', icon: '👥' },
-    { label: 'Currently Clocked-In', value: activeNow, color: 'bg-purple-50 text-purple-600', icon: '🟢' },
-    { label: 'Clocked-Out', value: completedToday, color: 'bg-orange-50 text-orange-600', icon: '🏁' },
+    { label: 'Total Hubbers',        value: totalUsers,      colorClass: 'text-blue-500',   Icon: Users       },
+    { label: 'Currently In', value: activeNow,       colorClass: 'text-green-500', Icon: CircleDot  },
+    { label: 'Session Completed',          value: completedToday,  colorClass: 'text-orange-500', Icon: CircleCheck },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-8 lg:grid-cols-3">
       {cards.map(card => (
         <div key={card.label} className="bg-white rounded-xl shadow p-6">
-          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${card.color} text-2xl mb-4`}>
-            {card.icon}
+          <div className={`inline-flex items-center gap-2 ${card.colorClass} mb-4`}>
+            <card.Icon size={16} strokeWidth={2} />
+            <span className="text-xl font-bold text-black">{card.label}</span>
           </div>
-          <p className="text-3xl font-bold text-gray-800 mb-1">{card.value}</p>
-          <p className="text-sm text-gray-500">{card.label}</p>
+          <p className="text-3xl font-bold text-gray-800">{card.value}</p>
         </div>
       ))}
     </div>
