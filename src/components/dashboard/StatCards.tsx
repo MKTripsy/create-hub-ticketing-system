@@ -15,9 +15,9 @@ type Props = {
 
 export default function StatCards({ totalUsers, activeNow, completedToday }: Props) {
   const cards: StatCard[] = [
-    { label: 'Total Hubbers',        value: totalUsers,      colorClass: 'text-blue-500',   Icon: Users       },
-    { label: 'Currently In', value: activeNow,       colorClass: 'text-green-500', Icon: CircleDot  },
-    { label: 'Session Completed',          value: completedToday,  colorClass: 'text-orange-500', Icon: CircleCheck },
+    { label: 'Total Hubbers', value: totalUsers, colorClass: 'text-blue-500',   Icon: Users       },
+    { label: 'Currently In', value: activeNow, colorClass: 'text-green-500', Icon: CircleDot  },
+    { label: 'Session Completed', value: completedToday, colorClass: 'text-orange-500', Icon: CircleCheck },
   ]
 
   return (

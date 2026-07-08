@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         orphanage_id: effectiveOrphanageId,
         orphanage_name: orphanageName,
         orphanage_code: orphanageCode,
+        photo_url: admin.photo_url ?? null,
       }
     })
 

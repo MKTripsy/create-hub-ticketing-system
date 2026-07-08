@@ -8,6 +8,32 @@ import AdminGuard from './AdminGuard'
 import Image from 'next/image'
 import CFLogo from '@/app/images/CREATE FOUNDATION logo B Snow.svg'
 
+function AdminAvatar({ photoUrl, firstName, lastName, size = 'md' }: {
+  photoUrl?: string | null
+  firstName: string
+  lastName: string
+  size?: 'sm' | 'md'
+}) {
+  const initials = `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase()
+  const sizeClass = size === 'sm' ? 'w-7 h-7 text-xs' : 'w-10 h-10 text-sm'
+
+  if (photoUrl) {
+    return (
+      <img
+        src={photoUrl}
+        alt={`${firstName} ${lastName}`}
+        className={`${sizeClass} rounded-full object-cover border-2 border-white/40 flex-shrink-0`}
+      />
+    )
+  }
+
+  return (
+    <div className={`${sizeClass} rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center font-semibold text-white flex-shrink-0`}>
+      {initials}
+    </div>
+  )
+}
+
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
@@ -21,7 +47,7 @@ export default function Navbar() {
     { href: '/admin/users', label: 'Hubbers' },
     { href: '/admin/attendance', label: 'Attendance' },
     { href: '/admin/schedules', label: 'Schedules' },
-    { href: '/admin/notifications', label: 'Activity Logs' }, 
+    { href: '/admin/notifications', label: 'Activity Logs' },
     { href: '/admin/settings', label: 'Settings' },
   ]
 
@@ -56,30 +82,36 @@ export default function Navbar() {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`} style={{ backgroundColor: '#FF6347' }}>
 
+        {/* Logo */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
           <Image src={CFLogo} alt="Create Hub Logo" className="w-[60%] h-auto mx-auto block" />
-
-          {/* Create Hub name */}
           <p className="text-xl text-white font-bold mt-2 mb-0.5">
             {admin.orphanage_name || 'Current Hub'}
           </p>
-          
         </div>
 
-        {/* Admin info */}
+        {/* Admin info with photo */}
         <div className="px-6 py-4 border-b border-[#FAF2F0]">
-          <p className="text-xl text-white font-bold">
-            {admin.first_name} {admin.last_name}
-          </p>
-
-          {/* Role badge */}
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-            admin.role === 'superadmin'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-white text-gray-700'
-          }`}>
-            {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
-          </span>
+          <div className="flex items-center gap-3">
+            <AdminAvatar
+              photoUrl={admin.photo_url}
+              firstName={admin.first_name}
+              lastName={admin.last_name}
+              size="md"
+            />
+            <div className="min-w-0">
+              <p className="text-white font-bold truncate">
+                {admin.first_name} {admin.last_name}
+              </p>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                admin.role === 'superadmin'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-white text-gray-700'
+              }`}>
+                {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Nav links */}

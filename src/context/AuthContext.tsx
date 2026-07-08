@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 type Admin = {
   id: number
@@ -12,6 +13,7 @@ type Admin = {
   orphanage_id: number | null
   orphanage_name: string | null
   orphanage_code: string | null
+  photo_url?: string | null
 }
 
 type AuthContextType = {
@@ -19,6 +21,7 @@ type AuthContextType = {
   login: (username: string, password: string, orphanageId: number) => Promise<boolean>
   logout: () => void
   isLoading: boolean
+  refreshAdmin: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -66,8 +69,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/')
   }
 
+  const refreshAdmin = async () => {
+    if (!admin) return
+    const { data } = await supabase
+      .from('admins')
+      .select('photo_url')
+      .eq('id', admin.id)
+      .single()
+    if (!data) return
+    const updated = { ...admin, photo_url: data.photo_url ?? null }
+    localStorage.setItem('admin', JSON.stringify(updated))
+    setAdmin(updated)
+  }
+
   return (
-    <AuthContext.Provider value={{ admin, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ admin, login, logout, isLoading, refreshAdmin }}>
       {children}
     </AuthContext.Provider>
   )
