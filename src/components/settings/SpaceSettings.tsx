@@ -270,30 +270,31 @@ export default function SpaceSettings() {
           Add Component
         </button>
       </div>
-
-      <table className="w-full">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
-            {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Age Group</th> */}
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Eligible Grades</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Operating Days</th>
-            {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th> */}
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Enrollment Limit</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {spaces.map(space => (
-            <SpaceRow
-              key={space.id}
-              space={space}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </tbody>
-      </table>
+      <div className='overflow-x-auto'>
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
+              {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Age Group</th> */}
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Eligible Grades</th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Operating Days</th>
+              {/* <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th> */}
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Enrollment Limit</th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {spaces.map(space => (
+              <SpaceRow
+                key={space.id}
+                space={space}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal */}
       {showModal && (

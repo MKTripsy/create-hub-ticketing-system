@@ -138,9 +138,9 @@ export default function AttendanceLogsPage() {
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Attendance Logs</h1>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2">
               <button onClick={() => setShowExportModal(true)}
                 className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium">
                 Export
@@ -149,10 +149,9 @@ export default function AttendanceLogsPage() {
                 className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium">
                 Manual Entry
               </button>
-              <button
-                onClick={refreshLogs}
+              <button onClick={refreshLogs}
                 className="text-[#FF6347] hover:text-[#414141] px-4 py-2 text-sm font-medium">
-                 ⟳ Refresh
+                ⟳ Refresh
               </button>
             </div>
           </div>

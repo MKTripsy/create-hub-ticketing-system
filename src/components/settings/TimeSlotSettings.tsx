@@ -239,29 +239,31 @@ export default function TimeSlotSettings() {
           ) : slots.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No time slots for this space yet</p>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {slots.map(slot => (
-                  <tr key={slot.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
-                    <td className="px-4 py-3 flex gap-3">
-                      <button onClick={() => openEdit(slot)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                      <button onClick={() => handleDelete(slot)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
-                    </td>
+            <div className='overflow-x-auto'>
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Time Slot</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Start</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">End</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {slots.map(slot => (
+                    <tr key={slot.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-800">{slot.label}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{slot.start_time}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{slot.end_time}</td>
+                      <td className="px-4 py-3 flex gap-3">
+                        <button onClick={() => openEdit(slot)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                        <button onClick={() => handleDelete(slot)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}

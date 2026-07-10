@@ -93,27 +93,27 @@ export default function AttendanceTable({
                   />
                 ) : (
                   <>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    <td className="px-3 py-4 text-sm font-medium text-gray-800 whitespace-nowrap">
                       {log.users?.first_name} {log.users?.last_name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{log.users?.custom_id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{log.spaces?.space_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{log.date}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{formatTime(log.time_started)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-4 text-sm text-gray-500">{log.users?.custom_id}</td>
+                    <td className="px-3 py-4 text-sm text-gray-600">{log.spaces?.space_name}</td>
+                    <td className="px-3 py-4 text-sm text-gray-600">{log.date}</td>
+                    <td className="px-3 py-4 text-sm text-gray-600">{formatTime(log.time_started)}</td>
+                    <td className="px-3 py-4 text-sm text-gray-600">
                       {log.time_ended
                         ? formatTime(log.time_ended)
                         : <span className="text-green-600 font-medium">Active</span>}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-4 text-sm text-gray-600">
                       {formatDuration(log.time_started, log.time_ended)}
                     </td>
                     {/* Pre Survey */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-4 text-sm text-gray-600">
                       <SurveyCell responses={log.pre_surveys} />
                     </td>
                     {/* Post Survey */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-4 text-sm text-gray-600">
                       <SurveyCell responses={log.post_surveys} />
                     </td>
                     {/* <td className="px-6 py-4 text-sm text-gray-600">
@@ -126,7 +126,7 @@ export default function AttendanceTable({
                         ? <span className="text-gray-300">—</span>
                         : <div className="space-y-1">{log.post_surveys.map((s, i) => <p key={i} className="text-xs">{s}</p>)}</div>}
                     </td> */}
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-4">
                       <div className="flex gap-3">
                         <button onClick={() => onEditStart(log)}
                           className="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>

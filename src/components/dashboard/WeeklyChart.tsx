@@ -123,7 +123,7 @@ export default function WeeklyChart({ weeklyData: initialData, spaces, spaceIds 
   }, [weekOffset])
 
   return (
-    <div className="lg:col-span-2 bg-white rounded-xl shadow p-6">
+    <div className="lg:col-span-2 bg-white rounded-xl shadow p-6 overflow-x-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-800">Weekly Attendance</h2>
         <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export default function WeeklyChart({ weeklyData: initialData, spaces, spaceIds 
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(v => !v)}
-              className="bg-[#FF6347] text-white px-3 py-1.5 rounded-lg hover:bg-[#414141] text-xs font-medium"
+              className="bg-[#FF6347] text-white px-3 py-1.5 rounded-lg hover:bg-[#414141] mx-2 text-xs font-medium"
             >
               Export
             </button>
