@@ -46,6 +46,7 @@ export default function Navbar() {
     { href: '/scan', label: 'Scan' },
     { href: '/admin/users', label: 'Hubbers' },
     { href: '/admin/attendance', label: 'Attendance' },
+    { href: '/admin/hubuse', label: 'Hub Use' },
     { href: '/admin/schedules', label: 'Schedules' },
     { href: '/admin/notifications', label: 'Activity Logs' },
     { href: '/admin/settings', label: 'Settings' },
