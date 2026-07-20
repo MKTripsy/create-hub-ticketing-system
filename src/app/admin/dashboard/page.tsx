@@ -13,6 +13,8 @@ import WeeklyChart from '@/components/dashboard/WeeklyChart'
 import SpaceUsageChart from '@/components/dashboard/SpaceUsageChart'
 import NotificationFeed from '@/components/dashboard/NotificationFeed'
 import SurveyStatCards from '@/components/dashboard/SurveyStatCards'
+import TodayHubStatus from '@/components/dashboard/TodayHubStatus'
+import WeeklyHubUseTable from '@/components/dashboard/WeeklyHubUseTable'
 
 export default function DashboardPage() {
   const { admin, isLoading } = useAuth()
@@ -27,19 +29,20 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
+  const orphanageId = admin?.orphanage_id ?? null
 
   const loadDashboard = async () => {
-    if (!admin?.orphanage_id) return
+    if (!orphanageId) return
     setLoading(true)
 
-    const spacesData = await fetchDashboardSpaces(admin.orphanage_id)
+    const spacesData = await fetchDashboardSpaces(orphanageId)
     setSpaces(spacesData)
 
     const ids = spacesData.map(s => s.id)
     setSpaceIds(ids)
 
     const [users, todaySessions, weekly] = await Promise.all([
-      fetchTotalUsers(admin.orphanage_id),
+      fetchTotalUsers(orphanageId),
       fetchTodaySessions(ids, today),
       fetchWeeklyAttendance(ids, spacesData),
     ])
@@ -57,16 +60,16 @@ export default function DashboardPage() {
   }
 
   const loadNotifications = async () => {
-    if (!admin?.orphanage_id) return
-    const data = await fetchNotifications(admin.orphanage_id)
+    if (!orphanageId) return
+    const data = await fetchNotifications(orphanageId)
     setNotifications(data)
   }
 
   useEffect(() => {
-    if (isLoading || !admin?.orphanage_id) return
+    if (isLoading || !orphanageId) return
     loadDashboard()
     loadNotifications()
-  }, [admin?.orphanage_id, isLoading])
+  }, [orphanageId, isLoading])
 
   if (loading) {
     return (
@@ -94,29 +97,47 @@ export default function DashboardPage() {
               </p>
             </div>
             <button onClick={loadDashboard}
-              className="bg-[#FF6347] text-[#FAF2F0] hover:bg-[#717171] px-4 py-2 rounded-lg text-sm shadow">
-              Refresh
+              className="text-[#FF6347] hover:text-[#414141] px-4 py-2 text-m font-medium">
+              ⟳ Refresh
             </button>
           </div>
 
+          {/* Attendance stat cards */}
           <StatCards
             totalUsers={totalUsers}
             activeNow={activeNow}
             completedToday={completedToday}
           />
 
+          {/* Charts */}
           <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
             <WeeklyChart weeklyData={weeklyData} spaces={spaces} spaceIds={spaceIds} />
             <SpaceUsageChart spaceData={spaceData} />
           </div>
 
           {/* Hub Use */}
-          <div className="mb-2">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Hub Use</h2>
-          </div>
-          <div className="mb-8">
-            {spaceIds.length > 0 && <SurveyStatCards spaceIds={spaceIds} />}
-          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Hub Use</h2>
+
+          {orphanageId !== null && (
+            <>
+              {/* Today's status + weekly table side by side on large screens */}
+              <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-3">
+                <div className="lg:col-span-1">
+                  <TodayHubStatus orphanageId={orphanageId} />
+                </div>
+                <div className="lg:col-span-2">
+                  <WeeklyHubUseTable orphanageId={orphanageId} />
+                </div>
+              </div>
+
+              {/* Survey stat cards */}
+              {spaceIds.length > 0 && (
+                <div className="mb-8">
+                  <SurveyStatCards spaceIds={spaceIds} />
+                </div>
+              )}
+            </>
+          )}
 
         </div>
       </div>
