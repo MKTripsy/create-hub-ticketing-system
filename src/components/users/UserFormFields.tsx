@@ -146,6 +146,7 @@ export default function UserFormFields({
           className={inputClass}
         >
           <option value="">Select grade level</option>
+          <option value="Not Enrolled">Not Enrolled</option>
           <option value="Daycare">Daycare</option>
           <option value="Kindergarten">Kindergarten</option>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => (
