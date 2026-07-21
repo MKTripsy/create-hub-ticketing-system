@@ -10,6 +10,13 @@ type NotificationType =
   | 'attendance_edited'
   | 'attendance_deleted'
   | 'system'
+  | 'hub_use_added'
+  | 'hub_use_edited'
+  | 'hub_use_deleted'
+  | 'task_created'
+  | 'task_edited'
+  | 'task_deleted'
+  | 'task_completed'
 
 export const createNotification = async (
   type: NotificationType,

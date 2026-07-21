@@ -19,6 +19,7 @@ type Admin = {
   orphanage_id: number | null
   orphanage_name?: string
   photo_url?: string | null
+  email?: string | null 
 }
 
 function AdminAvatar({ admin }: { admin: Admin }) {
@@ -62,6 +63,7 @@ export default function HubManagementSettings() {
     password: '',
     role: 'admin',
     orphanage_id: '',
+    email: ' ',
   })
   const [savingAdmin, setSavingAdmin] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -117,7 +119,7 @@ export default function HubManagementSettings() {
     setLoadingAdmins(true)
     const { data } = await supabase
       .from('admins')
-      .select('id, first_name, last_name, username, role, orphanage_id, photo_url, orphanages:orphanage_id(name)')
+      .select('id, first_name, last_name, username, role, orphanage_id, photo_url, email, orphanages:orphanage_id(name)')
       .order('id')
     if (data) {
       setAdmins(data.map((a: any) => ({
@@ -130,7 +132,7 @@ export default function HubManagementSettings() {
 
   const openAddAdmin = () => {
     setEditingAdmin(null)
-    setAdminForm({ first_name: '', last_name: '', username: '', password: '', role: 'admin', orphanage_id: '' })
+    setAdminForm({ first_name: '', last_name: '', username: '', password: '', role: 'admin', orphanage_id: '', email: '' })
     setShowAdminModal(true)
   }
 
@@ -143,6 +145,7 @@ export default function HubManagementSettings() {
       password: '',
       role: admin.role,
       orphanage_id: admin.orphanage_id?.toString() || '',
+      email: admin.email || '',
     })
     setShowAdminModal(true)
   }
@@ -163,6 +166,7 @@ export default function HubManagementSettings() {
       last_name: adminForm.last_name,
       username: adminForm.username,
       role: adminForm.role,
+      email: adminForm.email || null,
       orphanage_id: adminForm.role === 'superadmin'
         ? null
         : adminForm.orphanage_id ? parseInt(adminForm.orphanage_id) : null,
@@ -357,6 +361,14 @@ export default function HubManagementSettings() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                     <input type="text" value={adminForm.username}
                       onChange={e => setAdminForm({ ...adminForm, username: e.target.value.replace(/\s/g, '') })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" value={adminForm.email ?? ''}
+                      onChange={e => setAdminForm({ ...adminForm, email: e.target.value })}
+                      placeholder="admin@example.com"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
                     />
                   </div>

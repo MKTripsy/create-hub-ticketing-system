@@ -17,7 +17,13 @@ export const NOTIFICATION_TYPES = [
   { value: 'manual_entry', label: 'Manual Entry' },
   { value: 'attendance_edited', label: 'Attendance Edited' },
   { value: 'attendance_deleted', label: 'Attendance Deleted' },
-  // { value: 'system', label: 'System' },
+  { value: 'hub_use_added', label: 'Hub Use Added' },
+  { value: 'hub_use_edited', label: 'Hub Use Edited' },
+  { value: 'hub_use_deleted', label: 'Hub Use Deleted' },
+  { value: 'task_created', label: 'Task Created' },
+  { value: 'task_edited', label: 'Task Edited' },
+  { value: 'task_deleted', label: 'Task Deleted' },
+  { value: 'task_completed', label: 'Task Completed' },
 ]
 
 export const getNotificationStyle = (type: string) => {
@@ -31,6 +37,13 @@ export const getNotificationStyle = (type: string) => {
     case 'attendance_edited': return 'bg-blue-50 text-blue-700'
     case 'attendance_deleted': return 'bg-red-50 text-red-700'
     case 'system': return 'bg-purple-50 text-purple-700'
+    case 'hub_use_added': return 'bg-green-50 text-green-700'
+    case 'hub_use_edited': return 'bg-blue-50 text-blue-700'
+    case 'hub_use_deleted': return 'bg-red-50 text-red-700'
+    case 'task_created': return 'bg-green-50 text-green-700'
+    case 'task_edited': return 'bg-blue-50 text-blue-700'
+    case 'task_deleted': return 'bg-red-50 text-red-700'
+    case 'task_completed': return 'bg-purple-50 text-purple-700'
     default: return 'bg-gray-50 text-gray-700'
   }
 }

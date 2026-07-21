@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import bcrypt from 'bcryptjs'
 
 export default function AdminAccountSettings() {
-  const { admin } = useAuth()
+  const { admin, refreshAdmin } = useAuth()
   const [form, setForm] = useState({
     first_name: admin?.first_name || '',
     last_name: admin?.last_name || '',
@@ -40,7 +40,8 @@ export default function AdminAccountSettings() {
     if (error) {
       alert('Something went wrong. Please try again.')
     } else {
-      alert('Account info updated! Please log out and log back in to see changes.')
+      await refreshAdmin()
+      alert('Account info updated!')
     }
     setSavingInfo(false)
   }

@@ -12,6 +12,7 @@
     "electron:prod": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\""
   },
   "dependencies": {
+    "@getbrevo/brevo": "^6.0.2",
     "@supabase/supabase-js": "^2.100.0",
     "auto-launch": "^5.0.6",
     "bcryptjs": "^3.0.3",

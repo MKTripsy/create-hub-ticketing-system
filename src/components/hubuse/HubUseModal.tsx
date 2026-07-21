@@ -8,7 +8,7 @@ type Props = {
   allSpaces: HubUseSpace[]
   record?: HubUseRecord        // present when editing, absent when creating
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (isNew: boolean) => void
 }
 
 export default function HubUseModal({ orphanageId, allSpaces, record, onClose, onSuccess }: Props) {
@@ -41,7 +41,7 @@ export default function HubUseModal({ orphanageId, allSpaces, record, onClose, o
         : await insertHubUse({ orphanageId, date, notes, spaceIds })
 
       if (error) throw error
-      onSuccess()
+      onSuccess(isEdit ? false : true)
       onClose()
     } catch (err) {
       console.error('HubUse save error:', err)

@@ -9,6 +9,7 @@ import {
   deleteHubUse, formatHubTime, formatHubDate
 } from '@/lib/api/hubUse'
 import HubUseModal from '@/components/hubuse/HubUseModal'
+import { createNotification } from '@/lib/notifications'
 
 export default function HubUsePage() {
   const { admin, isLoading } = useAuth()
@@ -44,8 +45,10 @@ export default function HubUsePage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this hub use record?')) return
+    const record = records.find(r => r.id === id)
     const { error } = await deleteHubUse(id)
     if (error) { alert('Something went wrong.'); return }
+    await createNotification('hub_use_deleted', `${admin?.first_name} ${admin?.last_name} deleted hub use record for ${record?.date}`, orphanageId ?? undefined)
     load()
   }
 
@@ -211,7 +214,15 @@ export default function HubUsePage() {
           allSpaces={allSpaces}
           record={editingRecord}
           onClose={() => setShowModal(false)}
-          onSuccess={load}
+          onSuccess={async (isNew) => {
+            await load()
+            const adminName = `${admin?.first_name} ${admin?.last_name}`
+            if (isNew) {
+              await createNotification('hub_use_added', `${adminName} added a hub use record`, orphanageId)
+            } else {
+              await createNotification('hub_use_edited', `${adminName} edited a hub use record`, orphanageId)
+            }
+          }}
         />
       )}
     </AdminGuard>
