@@ -114,6 +114,8 @@ export default function WeeklyChart({ weeklyData: initialData, spaces, spaceIds 
   const [weeklyData, setWeeklyData] = useState<DailyAttendance[]>(initialData)
   const [loading, setLoading] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
+ 
+  console.log('spaces order:', spaces.map(s => `${s.id}:${s.space_name}`))
 
   useEffect(() => {
     if (weekOffset === 0) { setWeeklyData(initialData); return }
@@ -190,7 +192,21 @@ export default function WeeklyChart({ weeklyData: initialData, spaces, spaceIds 
             <XAxis dataKey="day" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
             <Tooltip />
-            <Legend />
+            <Legend
+              content={() => (
+                <div className="flex justify-center gap-4 mt-2">
+                  {spaces.map((space, index) => (
+                    <div key={space.id} className="flex items-center gap-1">
+                      <div
+                        className="w-3 h-3 rounded-sm"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="text-xs text-gray-500">{space.space_name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            />
             {sortedSpaces.map((space, index) => (
               <Bar key={space.id} dataKey={space.space_name}
                 fill={COLORS[index % COLORS.length]} radius={[4, 4, 0, 0]} />

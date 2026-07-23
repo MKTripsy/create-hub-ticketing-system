@@ -24,6 +24,7 @@ async function sendTaskNotification(
   type: 'created' | 'completed',
   task: Task
 ) {
+  console.log('sendTaskNotification called:', type, task.title)
   try {
     await fetch('/api/tasks/notify', {
       method: 'POST',
@@ -52,6 +53,7 @@ async function sendTaskNotification(
           : null,
       })
     })
+    console.log('notify fetch completed')
   } catch (err) {
     console.error('Notification error:', err)
   }
