@@ -3,7 +3,7 @@ import { BrevoClient } from '@getbrevo/brevo'
 
 const client = new BrevoClient({ apiKey: process.env.BREVO_API_KEY || '' })
 
-const FROM = { email: 'jan.tripolca@gmail.com', name: 'Create Hub' }
+const FROM = { email: 'createhubportal@createfoundation.ph', name: 'Create Hub Portal' }
 
 type Recipient = { name: string; email: string }
 

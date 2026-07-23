@@ -37,8 +37,9 @@ export default function EditUserPage() {
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showQR, setShowQR] = useState(false)
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  // Uncomment for profile picture funnctionality
+  // const [photoFile, setPhotoFile] = useState<File | null>(null)
+  // const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [secondarySpaceIds, setSecondarySpaceIds] = useState<number[]>([])
   const [originalSecondarySpaceIds, setOriginalSecondarySpaceIds] = useState<number[]>([])
   const [form, setForm] = useState<FormState>({
@@ -77,7 +78,7 @@ export default function EditUserPage() {
           custom_id: userRes.data.custom_id,
           is_active: userRes.data.is_active,
         })
-        if (userRes.data.photo_url) setPhotoPreview(userRes.data.photo_url)
+        // if (userRes.data.photo_url) setPhotoPreview(userRes.data.photo_url) uncomment for profile photo
       }
 
       setSpaces(spacesData)
@@ -165,9 +166,12 @@ export default function EditUserPage() {
         userId: numericId, form,
         availability: avail.availability,
         availabilityBySpace: avail.availabilityBySpace,
-        secondarySpaceIds, photoFile,
+        secondarySpaceIds, 
+        // Uncomment for profile picture functionality
+        // photoFile,
       })
-      if (newPhotoUrl) { setPhotoPreview(newPhotoUrl); setPhotoFile(null) }
+      // Uncomment for profile picture functionality
+      // if (newPhotoUrl) { setPhotoPreview(newPhotoUrl); setPhotoFile(null) }
       setOriginalAvailability(avail.availability)
       setOriginalAvailabilityBySpace(avail.availabilityBySpace)
       setOriginalSecondarySpaceIds(secondarySpaceIds)
@@ -206,12 +210,13 @@ export default function EditUserPage() {
     setIsEditing(false)
   }
 
-  const handleRemovePhoto = async () => {
-    if (!confirm('Are you sure you want to remove this photo?')) return
-    await removeUserPhoto(numericId)
-    setPhotoPreview(null)
-    setPhotoFile(null)
-  }
+  // Uncomment for profile picture functionality
+  // const handleRemovePhoto = async () => {
+  //   if (!confirm('Are you sure you want to remove this photo?')) return
+  //   await removeUserPhoto(numericId)
+  //   setPhotoPreview(null)
+  //   setPhotoFile(null)
+  // }
 
   const handlePrint = () => {
     if (!form.qr_code) return
@@ -264,14 +269,15 @@ export default function EditUserPage() {
                 secondarySpaceIds={secondarySpaceIds}
                 onToggleSecondarySpace={handleToggleSecondarySpace}
                 onPrimarySpaceChange={handlePrimarySpaceChange}
-                photoPreview={photoPreview}
-                onPhotoChange={e => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  setPhotoFile(file)
-                  setPhotoPreview(URL.createObjectURL(file))
-                }}
-                onRemovePhoto={handleRemovePhoto}
+                // Uncomment for profile picture functionality
+                // photoPreview={photoPreview}
+                // onPhotoChange={e => {
+                //   const file = e.target.files?.[0]
+                //   if (!file) return
+                //   setPhotoFile(file)
+                //   setPhotoPreview(URL.createObjectURL(file))
+                // }}
+                // onRemovePhoto={handleRemovePhoto}
                 disabled={!isEditing}
               />
             </div>

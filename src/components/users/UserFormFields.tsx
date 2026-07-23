@@ -15,9 +15,9 @@ type Props = {
   secondarySpaceIds: number[]
   onToggleSecondarySpace: (spaceId: number) => void
   onPrimarySpaceChange: (spaceId: string) => void
-  photoPreview: string | null
-  onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onRemovePhoto: () => void
+  // photoPreview: string | null                                              Uncomment for profile picture funnctionality
+  // onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void          Uncomment for profile picture funnctionality
+  // onRemovePhoto: () => void                                                Uncomment for profile picture funnctionality
   disabled?: boolean
   accentColor?: string
   showAutoAssignHint?: boolean
@@ -30,9 +30,9 @@ export default function UserFormFields({
   secondarySpaceIds,
   onToggleSecondarySpace,
   onPrimarySpaceChange,
-  photoPreview,
-  onPhotoChange,
-  onRemovePhoto,
+  // photoPreview,     Uncomment for profile picture funnctionality
+  // onPhotoChange,
+  // onRemovePhoto,
   disabled = false,
   accentColor = '#FF6347',
   showAutoAssignHint = false,
@@ -73,49 +73,6 @@ export default function UserFormFields({
           className={inputClass}
           placeholder="Last Name"
         />
-      </div>
-
-      {/* Profile Photo */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
-        <div className="flex items-center gap-4">
-          {photoPreview ? (
-            <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-gray-200" />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-3xl border border-gray-200">
-              👤
-            </div>
-          )}
-          <div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onPhotoChange}
-              className="hidden"
-              id="photo-upload"
-              disabled={disabled}
-            />
-            <label
-              htmlFor="photo-upload"
-              className={`px-4 py-2 rounded-lg text-sm ${
-                disabled
-                  ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer'
-              }`}
-            >
-              Choose Photo
-            </label>
-            {photoPreview && !disabled && (
-              <button
-                type="button"
-                onClick={onRemovePhoto}
-                className="ml-2 text-red-500 hover:text-red-700 text-sm"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Birthdate */}

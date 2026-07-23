@@ -13,11 +13,12 @@ type EditUserPayload = {
   availability: AvailabilityEntry[]
   availabilityBySpace: Record<number, AvailabilityEntry[]>
   secondarySpaceIds: number[]
-  photoFile: File | null
+  // uncomment for profile picture functionality
+  // photoFile?: File | null
 }
 
 export async function saveUser(payload: EditUserPayload): Promise<string | null> {
-  const { userId, form, availability, availabilityBySpace, secondarySpaceIds, photoFile } = payload
+  const { userId, form, availability, availabilityBySpace, secondarySpaceIds } = payload //add photoFile for profile picture functionality
 
   const { error: userError } = await supabase
     .from('users')
@@ -85,9 +86,10 @@ export async function saveUser(payload: EditUserPayload): Promise<string | null>
   if (userSpacesError) throw userSpacesError
 
   // Upload photo if changed
-  if (photoFile) {
-    return uploadUserPhoto(userId, photoFile)
-  }
+  // uncomment for profile picture functionality
+  // if (photoFile) {
+  //   return uploadUserPhoto(userId, photoFile)
+  // }
   return null
 }
 

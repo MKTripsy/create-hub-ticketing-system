@@ -123,25 +123,27 @@ export default function TaskModal({
             />
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <div className="flex gap-2">
-              {statusOptions.map(s => (
-                <button
-                  key={s}
-                  onClick={() => setStatus(s)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                    status === s
-                      ? `${statusColors[s]} border-current`
-                      : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+          {/* Status — only when editing */}
+          {isEdit && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <div className="flex gap-2">
+                {statusOptions.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setStatus(s)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                      status === s
+                        ? `${statusColors[s]} border-current`
+                        : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Assignees */}
           <div>

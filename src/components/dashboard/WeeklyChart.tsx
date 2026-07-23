@@ -107,7 +107,8 @@ function downloadPDF(weeklyData: DailyAttendance[], spaces: SpaceItem[], weekOff
 // ─── Component ────────────────────────────────────────────────────────────
 
 export default function WeeklyChart({ weeklyData: initialData, spaces, spaceIds }: Props) {
-  const sortedSpaces = [...spaces].sort((a, b) => a.space_name.localeCompare(b.space_name))
+  // const sortedSpaces = [...spaces].sort((a, b) => a.space_name.localeCompare(b.space_name))
+  const sortedSpaces = spaces
 
   const [weekOffset, setWeekOffset] = useState(0)
   const [weeklyData, setWeeklyData] = useState<DailyAttendance[]>(initialData)

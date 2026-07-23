@@ -16,7 +16,8 @@ export default function UserTable({ users, onViewQR }: Props) {
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Profile Picture</th>
+              {/* Uncomment for profile picture funnctionality */}
+              {/* <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Profile Picture</th> */}
               <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">ID</th>
               <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Name</th>
               <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Grade</th>
@@ -28,7 +29,8 @@ export default function UserTable({ users, onViewQR }: Props) {
           <tbody className="divide-y divide-gray-100">
             {users.map(user => (
               <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
+                {/* Uncomment for profile picture funnctionality */}
+                {/* <td className="px-6 py-4">
                   {user.photo_url ? (
                     <img
                       src={user.photo_url}
@@ -40,7 +42,7 @@ export default function UserTable({ users, onViewQR }: Props) {
                       👤
                     </div>
                   )}
-                </td>
+                </td> */}
                 <td className="px-6 py-4 text-sm font-medium text-gray-800">
                   {user.custom_id}
                 </td>

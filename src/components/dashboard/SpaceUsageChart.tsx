@@ -10,7 +10,8 @@ type Props = {
 }
 
 export default function SpaceUsageChart({ spaceData }: Props) {
-  const sortedData = [...spaceData].sort((a, b) => a.name.localeCompare(b.name))
+  // const sortedData = [...spaceData].sort((a, b) => a.name.localeCompare(b.name))
+  const sortedData = spaceData
 
   return (
     <div className="bg-white rounded-xl shadow p-6">

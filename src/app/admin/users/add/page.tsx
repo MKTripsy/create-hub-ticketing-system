@@ -34,8 +34,10 @@ export default function AddUserPage() {
   const [loading, setLoading] = useState(false)
   const [secondarySpaceIds, setSecondarySpaceIds] = useState<number[]>([])
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+
+  //Uncomment for profile picture funnctionality
+  // const [photoFile, setPhotoFile] = useState<File | null>(null)
+  // const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
   const [success, setSuccess] = useState(false)
   const [generatedId, setGeneratedId] = useState('')
@@ -106,7 +108,8 @@ export default function AddUserPage() {
         availability: avail.availability,
         availabilityBySpace: avail.availabilityBySpace,
         secondarySpaceIds,
-        photoFile,
+        //Uncomment for profile picture funnctionality
+        // photoFile,
         orphanage_id: admin!.orphanage_id as number, 
         orphanage_code: admin!.orphanage_code || 'HOH',
       })
@@ -129,8 +132,9 @@ export default function AddUserPage() {
     setGeneratedId('')
     setQrValue('')
     setSecondarySpaceIds([])
-    setPhotoFile(null)
-    setPhotoPreview(null)
+    //Uncomment for profile picture funnctionality
+    // setPhotoFile(null)
+    // setPhotoPreview(null)
     setForm(EMPTY_FORM)
     avail.resetAll()
   }
@@ -200,14 +204,15 @@ export default function AddUserPage() {
                 secondarySpaceIds={secondarySpaceIds}
                 onToggleSecondarySpace={handleToggleSecondarySpace}
                 onPrimarySpaceChange={handlePrimarySpaceChange}
-                photoPreview={photoPreview}
-                onPhotoChange={e => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  setPhotoFile(file)
-                  setPhotoPreview(URL.createObjectURL(file))
-                }}
-                onRemovePhoto={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                //Uncomment for profile picture funnctionality
+                // photoPreview={photoPreview}
+                // onPhotoChange={e => {
+                //   const file = e.target.files?.[0]
+                //   if (!file) return
+                //   setPhotoFile(file)
+                //   setPhotoPreview(URL.createObjectURL(file))
+                // }}
+                // onRemovePhoto={() => { setPhotoFile(null); setPhotoPreview(null) }}
                 accentColor="#CEE4B8"
                 showAutoAssignHint
               />

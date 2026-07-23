@@ -13,7 +13,8 @@ type AddUserPayload = {
   availability: AvailabilityEntry[]
   availabilityBySpace: Record<number, AvailabilityEntry[]>
   secondarySpaceIds: number[]
-  photoFile: File | null
+  // uncomment for profile picture functionality
+  // photoFile?: File | null
   orphanage_id: number
   orphanage_code?: string
 }
@@ -36,7 +37,7 @@ export async function generateCustomId(orphanage_id: number, orphanage_code?: st
 }
 
 export async function addUser(payload: AddUserPayload): Promise<{ customId: string; qrCode: string; userId: number }> {
-  const { form, availability, availabilityBySpace, secondarySpaceIds, photoFile, orphanage_id, orphanage_code } = payload
+  const { form, availability, availabilityBySpace, secondarySpaceIds, orphanage_id, orphanage_code} = payload // add photoFile for profile picture functionality
 
   const customId = await generateCustomId(orphanage_id, orphanage_code)
   const qrCode = uuidv4()
@@ -58,12 +59,12 @@ export async function addUser(payload: AddUserPayload): Promise<{ customId: stri
     .single()
   if (userError) throw userError
 
-  if (photoFile) {
-    const photoUrl = await uploadNewUserPhoto(newUser.id, photoFile)
-    if (photoUrl) {
-      await supabase.from('users').update({ photo_url: photoUrl }).eq('id', newUser.id)
-    }
-  }
+  // if (photoFile) {
+  //   const photoUrl = await uploadNewUserPhoto(newUser.id, photoFile)
+  //   if (photoUrl) {
+  //     await supabase.from('users').update({ photo_url: photoUrl }).eq('id', newUser.id)
+  //   }
+  // }
 
   const { error: availError } = await supabase.from('availability').insert(
     availability.map(a => ({

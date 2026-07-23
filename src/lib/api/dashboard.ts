@@ -44,6 +44,7 @@ export const fetchDashboardSpaces = async (orphanageId: number): Promise<SpaceIt
     .select('id, space_name')
     .eq('is_active', true)
     .eq('orphanage_id', orphanageId)
+    .order('id') 
   return data || []
 }
 
