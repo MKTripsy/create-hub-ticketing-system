@@ -7,7 +7,7 @@ import {
   Task, TaskStatus,
   fetchTasks, fetchAllAdmins,
   updateTaskStatus, deleteTask,
-  formatDueDate, isDueToday, isOverdue
+  formatDueDate, formatDueTime, isDueToday, isOverdue
 } from '@/lib/api/tasks'
 import TaskModal from '@/components/tasks/TaskModal'
 import { createNotification } from '@/lib/notifications'
@@ -35,9 +35,9 @@ async function sendTaskNotification(
           title: task.title,
           description: task.description,
           due_date: task.due_date
-            ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', {
+            ? `${new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', {
                 month: 'long', day: 'numeric', year: 'numeric'
-              })
+              })}${task.due_time ? ` at ${task.due_time}` : ''}`
             : null,
           status: task.status,
         },
@@ -159,11 +159,11 @@ export default function TasksPage() {
             <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
             <div className="flex gap-3">
               <button onClick={handleNew}
-                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium">
-                + New Task
+                className="bg-[#FF6347] text-white px-4 py-2 rounded-lg hover:bg-[#414141] text-sm font-medium transition-colors">
+                New Task
               </button>
               <button onClick={load}
-                className="text-[#FF6347] hover:text-[#414141] px-4 py-2 text-sm font-bold">
+                className="text-[#FF6347] hover:text-[#414141] px-4 py-2 text-sm font-medium">
                 ⟳ Refresh
               </button>
             </div>
@@ -216,6 +216,7 @@ export default function TasksPage() {
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Task</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Assigned To</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Due Time</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Created By</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -223,8 +224,8 @@ export default function TasksPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {filtered.map(task => {
-                      const overdue = isOverdue(task.due_date, task.status)
-                      const dueToday = isDueToday(task.due_date) && task.status !== 'Done'
+                      const overdue = isOverdue(task.due_date, task.due_time, task.status)
+                      const dueToday = isDueToday(task.due_date) && task.status !== 'Done' && !overdue
                       return (
                         <tr key={task.id} className="hover:bg-gray-50">
 
@@ -258,9 +259,22 @@ export default function TasksPage() {
                               dueToday ? 'text-orange-500 font-medium' :
                               'text-gray-600'
                             }`}>
-                              {formatDueDate(task.due_date)}
+                              {formatDueDate(task.due_date, task.due_time)}
                               {overdue && <span className="ml-1 text-xs">(Overdue)</span>}
                               {dueToday && <span className="ml-1 text-xs">(Today)</span>}
+                            </span>
+                          </td>
+
+                          {/* Due time */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`text-sm ${
+                              overdue ? 'text-red-500 font-medium' :
+                              dueToday ? 'text-orange-500 font-medium' :
+                              'text-gray-600'
+                            }`}>
+                              {formatDueTime(task.due_time)}
+                              {overdue}
+                              {dueToday}
                             </span>
                           </td>
 

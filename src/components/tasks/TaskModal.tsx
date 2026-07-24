@@ -27,6 +27,7 @@ export default function TaskModal({
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
+  const [dueTime, setDueTime] = useState(task?.due_time ?? '')
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'To Do')
   const [selectedIds, setSelectedIds] = useState<Set<number>>(
     new Set(task?.assignees.map(a => a.id) ?? [])
@@ -50,13 +51,13 @@ export default function TaskModal({
 
       if (isEdit) {
         const { error } = await updateTask({
-          id: task!.id, title, description, dueDate, status, assigneeIds
+          id: task!.id, title, description, dueDate, dueTime,  status, assigneeIds
         })
         if (error) throw error
         onSuccess(task!.id, false, prevStatus)
       } else {
         const { error, taskId } = await insertTask({
-          orphanageId, createdBy, title, description, dueDate, status, assigneeIds
+          orphanageId, createdBy, title, description, dueDate, dueTime, status, assigneeIds
         })
         if (error || !taskId) throw error
         onSuccess(taskId, true)
@@ -119,6 +120,19 @@ export default function TaskModal({
               type="date"
               value={dueDate}
               onChange={e => setDueDate(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
+            />
+          </div>
+
+          {/* Due Time */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Due Time <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="time"
+              value={dueTime}
+              onChange={e => setDueTime(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#FF6347]"
             />
           </div>

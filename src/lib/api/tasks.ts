@@ -14,6 +14,7 @@ export type Task = {
   title: string
   description: string | null
   due_date: string | null
+  due_time: string | null 
   status: TaskStatus
   orphanage_id: number
   created_by: number
@@ -31,7 +32,7 @@ export const fetchTasks = async (orphanageId: number): Promise<Task[]> => {
   const { data, error } = await supabase
     .from('tasks')
     .select(`
-      id, title, description, due_date, status,
+      id, title, description, due_date, due_time, status,
       orphanage_id, created_by, created_at,
       creator:created_by ( id, first_name, last_name, email )
     `)
@@ -64,6 +65,7 @@ export const insertTask = async (payload: {
   title: string
   description: string
   dueDate: string
+  dueTime: string
   status: TaskStatus
   assigneeIds: number[]
 }) => {
@@ -75,6 +77,7 @@ export const insertTask = async (payload: {
       title: payload.title,
       description: payload.description || null,
       due_date: payload.dueDate || null,
+      due_time: payload.dueTime || null, 
       status: payload.status,
     })
     .select('id')
@@ -97,6 +100,7 @@ export const updateTask = async (payload: {
   title: string
   description: string
   dueDate: string
+  dueTime: string
   status: TaskStatus
   assigneeIds: number[]
 }) => {
@@ -106,6 +110,7 @@ export const updateTask = async (payload: {
       title: payload.title,
       description: payload.description || null,
       due_date: payload.dueDate || null,
+      due_time: payload.dueTime || null,
       status: payload.status,
     })
     .eq('id', payload.id)
@@ -147,11 +152,20 @@ export const fetchAllAdmins = async (orphanageId: number) => {
   return data || []
 }
 
-export const formatDueDate = (date: string | null): string => {
+export const formatDueDate = (date: string | null, time: string | null): string => {
   if (!date) return '—'
-  return new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
+  const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   })
+  return `${dateStr}`
+}
+
+export const formatDueTime = (time: string | null): string => {
+  if (!time) return '-'
+  const [h, m] = time.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
 export const isDueToday = (date: string | null): boolean => {
@@ -160,8 +174,9 @@ export const isDueToday = (date: string | null): boolean => {
   return date === today
 }
 
-export const isOverdue = (date: string | null, status: TaskStatus): boolean => {
+export const isOverdue = (date: string | null, time: string | null, status: TaskStatus): boolean => {
   if (!date || status === 'Done') return false
-  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' })
-  return date < today
+  const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Manila' }).replace(' ', 'T')
+  const dueDateTime = time ? `${date}T${time}` : `${date}T23:59:59`
+  return now > dueDateTime
 }
